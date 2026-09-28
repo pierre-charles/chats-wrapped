@@ -1,10 +1,51 @@
 import * as Highcharts from "highcharts";
 import { HighchartsReact } from "highcharts-react-official";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { barChart, fmt, lineChart } from "../lib/charts";
 import { useChatData } from "../lib/chat-context";
 import type { MediaSent } from "../lib/schemas";
+import { useTheme } from "../lib/theme";
+
+function resolveColor(varName: string): string {
+  const el = document.createElement("div");
+  el.style.display = "none";
+  el.style.color = `var(${varName})`;
+  document.body.appendChild(el);
+  const resolved = getComputedStyle(el).color;
+  el.remove();
+  return resolved;
+}
+
+function useChartColors() {
+  const { theme } = useTheme();
+  const [colors, setColors] = useState({
+    emojis: "#2b7a9e",
+    messages: "#a569bd",
+    deleted: "#c9304d",
+    avgUser: "#0f766e",
+    avgDay: "#c2610c",
+    text: "#1a1a1a",
+    muted: "#595959"
+  });
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-resolve CSS vars when theme toggles
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      setColors({
+        emojis: resolveColor("--chart-emojis"),
+        messages: resolveColor("--chart-messages"),
+        deleted: resolveColor("--chart-deleted"),
+        avgUser: resolveColor("--chart-avg-user"),
+        avgDay: resolveColor("--chart-avg-day"),
+        text: resolveColor("--color-text"),
+        muted: resolveColor("--color-text-muted")
+      });
+    });
+  }, [theme]);
+
+  return colors;
+}
 
 const sortDesc = (data: Record<string, number>) =>
   Object.entries(data).sort((a, b) => b[1] - a[1]);
@@ -32,6 +73,7 @@ const MEDIA_LABELS: [keyof MediaSent, string][] = [
 export default function Stats() {
   const { data, clear } = useChatData();
   const navigate = useNavigate();
+  const colors = useChartColors();
 
   useEffect(() => {
     if (!data) {
@@ -106,8 +148,7 @@ export default function Stats() {
 
   return (
     <main className="stats">
-      <header className="stats__header">
-        <h1 className="stats__title">Chats Wrapped</h1>
+      <div className="stats__actions">
         <button
           type="button"
           className="stats__back"
@@ -118,7 +159,7 @@ export default function Stats() {
         >
           Upload another
         </button>
-      </header>
+      </div>
 
       <nav className="stats__nav">
         <h2>Contents</h2>
@@ -198,7 +239,8 @@ export default function Stats() {
           options={barChart(
             topEmojis.map(([e]) => e),
             topEmojis.map(([, c]) => c),
-            "#7fb3d5"
+            colors.emojis,
+            colors.text
           )}
         />
       </section>
@@ -210,7 +252,8 @@ export default function Stats() {
           options={barChart(
             messageSenders.map(([u]) => u),
             messageSenders.map(([, c]) => c),
-            "#a569bd"
+            colors.messages,
+            colors.text
           )}
         />
       </section>
@@ -219,7 +262,7 @@ export default function Stats() {
         <h2>Messages sent trends</h2>
         <HighchartsReact
           highcharts={Highcharts}
-          options={lineChart(monthlyTrendSeries)}
+          options={lineChart(monthlyTrendSeries, colors.text)}
         />
       </section>
 
@@ -230,7 +273,8 @@ export default function Stats() {
           options={barChart(
             deleters.map(([u]) => u),
             deleters.map(([, c]) => c),
-            "#f15c80"
+            colors.deleted,
+            colors.text
           )}
         />
       </section>
@@ -242,7 +286,8 @@ export default function Stats() {
           options={barChart(
             avgPerUser.map((d) => d.user),
             avgPerUser.map((d) => d.average),
-            "#73c6b6"
+            colors.avgUser,
+            colors.text
           )}
         />
       </section>
@@ -254,7 +299,8 @@ export default function Stats() {
           options={barChart(
             avgPerDay.map((d) => d.day),
             avgPerDay.map((d) => d.average),
-            "#f7a35c"
+            colors.avgDay,
+            colors.text
           )}
         />
       </section>
