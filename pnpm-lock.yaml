@@ -14,6 +14,12 @@ importers:
       '@react-router/serve':
         specifier: ^8.4.0
         version: 8.4.0(react-router@8.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(typescript@5.9.3)
+      highcharts:
+        specifier: 12.2.0
+        version: 12.2.0
+      highcharts-react-official:
+        specifier: 3.2.1
+        version: 3.2.1(highcharts@12.2.0)(react@19.3.0)
       isbot:
         specifier: ^5.1.36
         version: 5.2.2
@@ -592,6 +598,15 @@ packages:
   hasown@2.0.4:
     resolution: {integrity: sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A==}
     engines: {node: '>= 0.4'}
+
+  highcharts-react-official@3.2.1:
+    resolution: {integrity: sha512-hyQTX7ezCxl7JqumaWiGsroGWalzh24GedQIgO3vJbkGOZ6ySRAltIYjfxhrq4HszJOySZegotEF7v+haQ75UA==}
+    peerDependencies:
+      highcharts: '>=6.0.0'
+      react: '>=16.8.0'
+
+  highcharts@12.2.0:
+    resolution: {integrity: sha512-UUN+osTP3aeGc4KmoMuWAjzpKif8GYHFozzYI4O8h1ILGof25M/ZGBpXLvgqf1z0LVh7N9eG7i0HnzMfjcR4nA==}
 
   http-errors@2.0.1:
     resolution: {integrity: sha512-4FbRdAX+bSdmo4AUFuS0WNiPz8NgFt+r8ThgNWmlrjQjt1Q7ZR9+zTlce2859x4KSXrwIsaeTqDoKQmtP8pLmQ==}
@@ -1524,6 +1539,13 @@ snapshots:
   hasown@2.0.4:
     dependencies:
       function-bind: 1.1.2
+
+  highcharts-react-official@3.2.1(highcharts@12.2.0)(react@19.3.0):
+    dependencies:
+      highcharts: 12.2.0
+      react: 19.3.0
+
+  highcharts@12.2.0: {}
 
   http-errors@2.0.1:
     dependencies:

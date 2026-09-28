@@ -1,19 +1,19 @@
 import {
-  AggregatedStatsSchema,
-  ChatDataSchema,
-  DayStatsSchema,
-  MessageSchema,
   type ActiveDay,
   type ActiveHours,
   type AggregatedStats,
+  AggregatedStatsSchema,
   type ChatData,
+  ChatDataSchema,
   type DayAverage,
   type DayStats,
+  DayStatsSchema,
   type HourCount,
   type MediaSent,
   type Message,
+  MessageSchema,
   type MonthlyMessages,
-  type UserCount,
+  type UserCount
 } from "./schemas";
 
 const MESSAGE_REGEX =
@@ -26,7 +26,7 @@ const MEDIA_CHECKS: [string, keyof MediaSent][] = [
   ["gif omitted", "gifs"],
   ["video omitted", "videos"],
   ["audio omitted", "audios"],
-  ["sticker omitted", "stickers"],
+  ["sticker omitted", "stickers"]
 ];
 
 const DAYS_OF_WEEK = [
@@ -36,7 +36,7 @@ const DAYS_OF_WEEK = [
   "Wednesday",
   "Thursday",
   "Friday",
-  "Saturday",
+  "Saturday"
 ];
 
 const EXCLUDED_WORDS = new Set([
@@ -47,7 +47,7 @@ const EXCLUDED_WORDS = new Set([
   "poll",
   "sticker",
   "gif",
-  "image",
+  "image"
 ]);
 
 function parseMessage(line: string): Message | null {
@@ -63,7 +63,7 @@ function parseMessage(line: string): Message | null {
     date: parsedDate,
     time,
     user: user.replace(/^~\s*/, "").trim(),
-    content,
+    content
   });
 
   if (!result.success) {
@@ -88,7 +88,7 @@ function countEmojis(message: string): UserCount {
 function buildDayStats(
   date: Date,
   messages: Message[],
-  allUsers: string[],
+  allUsers: string[]
 ): DayStats {
   const messageCount: UserCount = {};
   const emojisUsed: UserCount = {};
@@ -99,7 +99,7 @@ function buildDayStats(
     videos: {},
     audios: {},
     polls: {},
-    stickers: {},
+    stickers: {}
   };
 
   const deletedMessages: UserCount = {};
@@ -160,12 +160,12 @@ function buildDayStats(
     messageCount,
     emojisUsed: Object.entries(emojisUsed).map(([emoji, count]) => ({
       emoji,
-      count,
+      count
     })),
     deletedMessages,
     mediaSent: media,
     wordFrequency,
-    hourlyMessages,
+    hourlyMessages
   });
 }
 
@@ -179,7 +179,7 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
     videos: {},
     audios: {},
     polls: {},
-    stickers: {},
+    stickers: {}
   };
   const averageMessagePerIndividualDay: Record<string, DayAverage> = {};
   const activeHours: ActiveHours = {};
@@ -187,11 +187,11 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
   let totalMessages = 0;
   let mostActiveDay: ActiveDay = {
     totalMessages: 0,
-    date: new Date(0),
+    date: new Date(0)
   };
   let leastActiveDay: ActiveDay = {
     totalMessages: Infinity,
-    date: new Date(0),
+    date: new Date(0)
   };
 
   for (const day of dayObjects) {
@@ -232,13 +232,13 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
     averageMessagePerIndividualDay[dayName] ??= {
       dayCount: 0,
       totalMessages: 0,
-      average: 0,
+      average: 0
     };
     averageMessagePerIndividualDay[dayName].dayCount++;
     averageMessagePerIndividualDay[dayName].totalMessages += day.totalMessages;
     averageMessagePerIndividualDay[dayName].average = Math.round(
       averageMessagePerIndividualDay[dayName].totalMessages /
-        averageMessagePerIndividualDay[dayName].dayCount,
+        averageMessagePerIndividualDay[dayName].dayCount
     );
 
     activeHours[dayName] ??= {};
@@ -250,7 +250,7 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
   const totalDays = dayObjects.length;
   const averageMessagePerDay = Math.round(totalMessages / totalDays);
   const averageMessagePerUserPerDay = Object.entries(totalMessagesByUser).map(
-    ([user, count]) => ({ user, average: Math.round(count / totalDays) }),
+    ([user, count]) => ({ user, average: Math.round(count / totalDays) })
   );
 
   if (leastActiveDay.totalMessages === Infinity) {
@@ -272,7 +272,7 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
     wordsSentCount: Object.fromEntries(sortedWords),
     mostActiveDay,
     leastActiveDay,
-    activeHours,
+    activeHours
   });
 }
 
@@ -296,7 +296,7 @@ export function parseChatFile(content: string):
 
     if (!parsed) {
       if (lastMessage && line.trim()) {
-        lastMessage.content += "\n" + line;
+        lastMessage.content += `\n${line}`;
       }
       continue;
     }
@@ -317,7 +317,7 @@ export function parseChatFile(content: string):
 
   const allUsers = Array.from(users);
   const dayStats = Array.from(messagesByDate.entries()).map(
-    ([timestamp, msgs]) => buildDayStats(new Date(timestamp), msgs, allUsers),
+    ([timestamp, msgs]) => buildDayStats(new Date(timestamp), msgs, allUsers)
   );
 
   const stats = aggregateStats(dayStats);
@@ -340,7 +340,7 @@ export function parseChatFile(content: string):
     messagesPerUserPerMonth,
     dayStats,
     users: allUsers,
-    lastUpdated: dayStats.at(-1)?.date ?? new Date(0),
+    lastUpdated: dayStats.at(-1)?.date ?? new Date(0)
   });
 
   if (!result.success) {
