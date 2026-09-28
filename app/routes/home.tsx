@@ -73,7 +73,6 @@ export default function Home() {
 
   return (
     <main className="upload-page">
-      <h1 className="upload-title">Chats Wrapped</h1>
       <p className="upload-subtitle">
         Upload your WhatsApp chat export to see your stats. Your data never
         leaves your browser.
