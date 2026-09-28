@@ -1,23 +1,89 @@
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/Geist-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/fonts/BricolageGrotesque-Variable.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+}
+
 :root {
-  --color-bg: rgb(252, 245, 235);
-  --color-card: #fff;
-  --color-primary: rgb(37, 211, 102);
-  --color-text: #1a1a1a;
-  --color-text-muted: #666;
-  --color-error: #f15c80;
-  --color-border: #000;
+  color-scheme: light dark;
+  --color-bg: light-dark(rgb(252, 245, 235), #1a1a1a);
+  --color-card: light-dark(#fff, #2a2a2a);
+  --color-primary: light-dark(#128c55, #25d366);
+  --color-text: light-dark(#1a1a1a, #f0f0f0);
+  --color-text-muted: light-dark(#595959, #999);
+  --color-error: light-dark(#c9304d, #f15c80);
+  --color-border: light-dark(#000, #444);
   --card-radius: 20px;
+  --chart-emojis: light-dark(#2b7a9e, #7fb3d5);
+  --chart-messages: light-dark(#a569bd, #a569bd);
+  --chart-deleted: light-dark(#c9304d, #f15c80);
+  --chart-avg-user: light-dark(#0f766e, #73c6b6);
+  --chart-avg-day: light-dark(#c2610c, #f7a35c);
+  --chart-trend: light-dark(#e74c3c, #e74c3c);
 }
 
 html {
   scroll-behavior: smooth;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+}
+
+/* App header */
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.app-header__logo {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+.app-header__accent {
+  color: var(--color-primary);
+}
+
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text);
+}
+
 html,
 body {
   margin: 0;
   padding: 0;
-  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
   background: var(--color-bg);
   color: var(--color-text);
 }
@@ -25,32 +91,35 @@ body {
 /* Upload page */
 
 .upload-page {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  min-height: 80vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.upload-title {
-  font-size: 3rem;
-  margin: 0 0 8px;
+  gap: 40px;
+  padding: 40px 20px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .upload-subtitle {
   color: var(--color-text-muted);
-  margin: 0 0 40px;
-  text-align: center;
-  max-width: 400px;
+  margin: 0;
   line-height: 1.5;
+  font-size: 1.125rem;
+}
+
+@media (max-width: 600px) {
+  .upload-page {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
 }
 
 .upload-dropzone {
   background: var(--color-card);
   border: 2px dashed var(--color-border);
   border-radius: var(--card-radius);
-  padding: 60px 80px;
+  padding: 40px;
   text-align: center;
   cursor: pointer;
   transition:
@@ -60,7 +129,7 @@ body {
 
 .upload-dropzone--active {
   border-color: var(--color-primary);
-  background: rgba(37, 211, 102, 0.05);
+  background: light-dark(rgba(18, 140, 85, 0.05), rgba(37, 211, 102, 0.1));
 }
 
 .upload-or {
@@ -93,16 +162,10 @@ body {
   padding: 20px;
 }
 
-.stats__header {
+.stats__actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: flex-end;
   margin-bottom: 24px;
-}
-
-.stats__title {
-  font-size: 2rem;
-  margin: 0;
 }
 
 .stats__back {
@@ -113,6 +176,7 @@ body {
   cursor: pointer;
   font-size: 0.875rem;
   font-family: inherit;
+  color: var(--color-text);
 }
 
 .stats__nav {
