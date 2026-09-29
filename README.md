@@ -1,87 +1,61 @@
-# Welcome to React Router!
+# ChatsWrapped
 
-A modern, production-ready template for building full-stack React applications using React Router.
+Turn your WhatsApp group chat export into a stats dashboard. Who sends the most messages? Who deletes the most? Who's the emoji king? Find out.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## The story
 
-## Features
+A friend asked a simple question: "wouldn't it be cool to know who sends the most messages in our group chat?" That curiosity turned into this... A full leaderboard and breakdown of your WhatsApp chat history. Messages sent, media shared, emojis used, active hours, trends over time, and more.
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## Privacy first
 
-## Getting Started
+Your data never leaves your browser. No server, no database, no cookies, no analytics. The chat file is read and parsed entirely client-side using the [parser](app/lib/parser.ts). Nothing is uploaded or stored anywhere.
 
-### Installation
+## What you get
 
-Install the dependencies:
+- **Summary** — total messages, days active, most/least active day, media counts
+- **Active hours heatmap** — when your group is most alive, broken down by day and hour
+- **Messages sent ranked** — the leaderboard
+- **Trends over time** — monthly message counts per user
+- **Average daily messages** — per person and per day of week
+- **Top emojis** — the 10 most used emojis across the chat
+- **Deleted messages ranked** — who's hiding what
 
-```bash
-npm install
-```
+## Tech stack
 
-### Development
+- [React](https://react.dev) + [TypeScript](https://www.typescriptlang.org)
+- [React Router v7](https://reactrouter.com) — routing and SSR framework
+- [Vite](https://vite.dev) — build tool and dev server
+- [Zod](https://zod.dev) — schema validation and type inference (single source of truth for all types)
+- [Highcharts](https://www.highcharts.com) — bar and line charts
+- [Biome](https://biomejs.dev) — linter and formatter
+- Vanilla CSS with `light-dark()` for automatic dark mode
+- Local variable fonts ([Geist](https://vercel.com/font) for body, [Bricolage Grotesque](https://fonts.google.com/specimen/Bricolage+Grotesque) for headings)
 
-Start the development server with HMR:
-
-```bash
-npm run dev
-```
-
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
+## Getting started
 
 ```bash
-npm run build
+pnpm install
+pnpm dev
 ```
 
-## Deployment
+Open [http://localhost:5173](http://localhost:5173), upload a WhatsApp chat export (`.txt`), or click "Try with sample data" to see it in action.
 
-### Docker Deployment
+### Export your WhatsApp chat
 
-To build and run using Docker:
+1. Open a WhatsApp chat (group or individual)
+2. Tap the three dots menu (Android) or the chat name (iOS)
+3. Select **Export chat** > **Without media**
+4. Save the `.txt` file and upload it
 
-```bash
-docker build -t my-app .
+## Scripts
 
-# Run the container
-docker run -p 3000:3000 my-app
-```
+| Command         | Description                |
+| --------------- | -------------------------- |
+| `pnpm dev`      | Start dev server           |
+| `pnpm build`    | Production build           |
+| `pnpm lint`     | Check for lint errors      |
+| `pnpm lint:fix` | Fix lint errors and format |
 
-The containerized application can be deployed to any platform that supports Docker, including:
+## License
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+[MIT](LICENSE)
