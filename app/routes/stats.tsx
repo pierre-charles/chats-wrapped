@@ -104,19 +104,22 @@ export default function Stats() {
         <h2>Contents</h2>
         <ol>
           <li>
-            <a href="#summary">Summary</a>
+            <a href="#podium">Top senders</a>
           </li>
           <li>
-            <a href="#users">Users</a>
+            <a href="#summary">Summary</a>
           </li>
           <li>
             <a href="#active-hours">Active hours</a>
           </li>
           <li>
+            <a href="#messages-trends">Messages sent trends</a>
+          </li>
+          <li>
             <a href="#messages-sent">Messages sent ranked</a>
           </li>
           <li>
-            <a href="#messages-trends">Messages sent trends</a>
+            <a href="#top-emojis">Top 10 emojis used</a>
           </li>
           <li>
             <a href="#avg-per-person">Average daily messages per person</a>
@@ -125,13 +128,28 @@ export default function Stats() {
             <a href="#avg-per-day">Average messages per day of week</a>
           </li>
           <li>
-            <a href="#top-emojis">Top 10 emojis used</a>
+            <a href="#messages-deleted">Messages deleted ranked</a>
           </li>
           <li>
-            <a href="#messages-deleted">Messages deleted ranked</a>
+            <a href="#users">Users</a>
           </li>
         </ol>
       </nav>
+
+      <section className="stats__section" id="podium">
+        <h2>Top senders</h2>
+        <div className="podium">
+          {messageSenders.slice(0, 3).map(([name, count], i) => (
+            <div key={name} className={`podium__place podium__place--${i + 1}`}>
+              <span className="podium__medal">
+                {["🥇", "🥈", "🥉"][i]}
+              </span>
+              <span className="podium__name">{name}</span>
+              <span className="podium__count">{fmt(count)} messages</span>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <section className="stats__section" id="summary">
         <h2>Summary</h2>
@@ -177,28 +195,20 @@ export default function Stats() {
         </div>
       </section>
 
-      <section className="stats__section" id="users">
-        <h2>Users</h2>
-        <div className="user-list">
-          {messageSenders.map(([name, count]) => (
-            <Link
-              key={name}
-              to={`/stats/${SlugSchema.parse(name)}`}
-              className="user-list__item"
-            >
-              <span className="user-list__name">{name}</span>
-              <span className="user-list__count">{fmt(count)} messages</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
       <section className="stats__section" id="active-hours">
         <h2>Active hours</h2>
         <Heatmap
           activeHours={stats.activeHours}
           color={colors.heatmap}
           mutedColor={colors.muted}
+        />
+      </section>
+
+      <section className="stats__section" id="messages-trends">
+        <h2>Messages sent trends</h2>
+        <HighchartsReact
+          highcharts={Highcharts}
+          options={lineChart(monthlyTrendSeries, colors.text)}
         />
       </section>
 
@@ -215,11 +225,16 @@ export default function Stats() {
         />
       </section>
 
-      <section className="stats__section" id="messages-trends">
-        <h2>Messages sent trends</h2>
+      <section className="stats__section" id="top-emojis">
+        <h2>Top 10 emojis used</h2>
         <HighchartsReact
           highcharts={Highcharts}
-          options={lineChart(monthlyTrendSeries, colors.text)}
+          options={barChart(
+            topEmojis.map(([e]) => e),
+            topEmojis.map(([, c]) => c),
+            colors.emojis,
+            colors.text,
+          )}
         />
       </section>
 
@@ -249,19 +264,6 @@ export default function Stats() {
         />
       </section>
 
-      <section className="stats__section" id="top-emojis">
-        <h2>Top 10 emojis used</h2>
-        <HighchartsReact
-          highcharts={Highcharts}
-          options={barChart(
-            topEmojis.map(([e]) => e),
-            topEmojis.map(([, c]) => c),
-            colors.emojis,
-            colors.text,
-          )}
-        />
-      </section>
-
       <section className="stats__section" id="messages-deleted">
         <h2>Messages deleted ranked</h2>
         <HighchartsReact
@@ -273,6 +275,25 @@ export default function Stats() {
             colors.text,
           )}
         />
+      </section>
+
+      <section className="stats__section" id="users">
+        <h2>Users</h2>
+        <div className="user-list">
+          {messageSenders.map(([name, count]) => (
+            <Link
+              key={name}
+              to={`/stats/${SlugSchema.parse(name)}`}
+              className="user-list__item"
+            >
+              <span className="user-list__name">{name}</span>
+              <span className="user-list__bottom">
+                <span className="user-list__count">{fmt(count)} messages</span>
+                <span className="user-list__arrow">→</span>
+              </span>
+            </Link>
+          ))}
+        </div>
       </section>
     </main>
   );
