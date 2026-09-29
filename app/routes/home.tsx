@@ -6,6 +6,7 @@ import {
 } from "react";
 import { useNavigate } from "react-router";
 import { useChatData } from "../lib/chat-context";
+import { parseChatFile } from "../lib/parser";
 import { handleFileUpload } from "../lib/upload";
 import type { Route } from "./+types/home";
 
