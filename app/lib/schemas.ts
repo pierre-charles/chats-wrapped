@@ -66,6 +66,9 @@ export const DayStatsSchema = z.object({
   mediaSent: MediaSentSchema,
   wordFrequency: UserCountSchema,
   hourlyMessages: HourCountSchema,
+  emojisUsedByUser: z.record(z.string(), UserCountSchema),
+  wordFrequencyByUser: z.record(z.string(), UserCountSchema),
+  hourlyMessagesByUser: z.record(z.string(), HourCountSchema),
 });
 
 export type DayStats = z.infer<typeof DayStatsSchema>;
@@ -120,6 +123,9 @@ export const AggregatedStatsSchema = z.object({
   mostActiveDay: ActiveDaySchema,
   leastActiveDay: ActiveDaySchema,
   activeHours: ActiveHoursSchema,
+  emojisUsedByUser: z.record(z.string(), UserCountSchema),
+  wordsUsedByUser: z.record(z.string(), UserCountSchema),
+  activeHoursByUser: z.record(z.string(), ActiveHoursSchema),
 });
 
 export type AggregatedStats = z.infer<typeof AggregatedStatsSchema>;
