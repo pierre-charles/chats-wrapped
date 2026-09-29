@@ -361,6 +361,7 @@ export function parseChatFile(content: string): ParseResult {
   const users = new Set<string>();
   const messagesByDate = new Map<number, Message[]>();
   let lastMessage: Message | null = null;
+  let groupName: string | null = null;
 
   for (const line of lines) {
     const parsed = parseMessage(line);
@@ -384,6 +385,13 @@ export function parseChatFile(content: string): ParseResult {
 
     const lower = parsed.content.toLowerCase();
     if (SYSTEM_MESSAGES.some((msg) => lower.includes(msg))) {
+      if (lower.includes("end-to-end encrypted")) {
+        groupName = parsed.user;
+      }
+      continue;
+    }
+
+    if (groupName && parsed.user === groupName) {
       continue;
     }
 
