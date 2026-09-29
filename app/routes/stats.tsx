@@ -1,15 +1,11 @@
 import * as Highcharts from "highcharts";
 import { HighchartsReact } from "highcharts-react-official";
-import { Fragment, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router";
+import { Heatmap } from "../components/heatmap";
 import { barChart, lineChart, useChartColors } from "../lib/charts";
 import { useChatData } from "../lib/chat-context";
-import {
-  type ActiveHours,
-  DayOfWeekSchema,
-  MEDIA_LABELS,
-  SlugSchema,
-} from "../lib/schemas";
+import { DayOfWeekSchema, MEDIA_LABELS, SlugSchema } from "../lib/schemas";
 import { fmt, sortDesc, sumValues } from "../lib/utils";
 
 const formatDate = (date: Date) =>
@@ -21,66 +17,6 @@ const formatDate = (date: Date) =>
   }).format(date);
 
 const DAYS = DayOfWeekSchema.options;
-const HOURS = Array.from({ length: 24 }, (_, i) => String(i)) as string[];
-
-function Heatmap({
-  activeHours,
-  color,
-  mutedColor,
-}: {
-  activeHours: ActiveHours;
-  color: string;
-  mutedColor: string;
-}) {
-  const maxCount = Math.max(
-    1,
-    ...DAYS.flatMap((d) => HOURS.map((h) => activeHours[d]?.[h] ?? 0)),
-  );
-  const sqrtMax = Math.sqrt(maxCount);
-
-  return (
-    <div className="heatmap">
-      <div className="heatmap__corner" />
-      {HOURS.map((h) => (
-        <div key={h} className="heatmap__hour" style={{ color: mutedColor }}>
-          {h.padStart(2, "0")}
-        </div>
-      ))}
-      {DAYS.map((day) => (
-        <Fragment key={day}>
-          <div className="heatmap__day" style={{ color: mutedColor }}>
-            {day.slice(0, 3)}
-          </div>
-          {HOURS.map((h) => {
-            const count = activeHours[day]?.[h] ?? 0;
-            const opacity = Math.sqrt(count) / sqrtMax;
-            return (
-              <div
-                key={h}
-                className="heatmap__cell"
-                style={{
-                  backgroundColor: color,
-                  opacity: Math.max(0.05, opacity),
-                }}
-                title={`${day} ${h.padStart(2, "0")}:00 — ${fmt(count)} messages`}
-              />
-            );
-          })}
-        </Fragment>
-      ))}
-      <div className="heatmap__key">
-        <span style={{ color: mutedColor }}>Less</span>
-        <div
-          className="heatmap__key-gradient"
-          style={{
-            background: `linear-gradient(to right, transparent, ${color})`,
-          }}
-        />
-        <span style={{ color: mutedColor }}>More</span>
-      </div>
-    </div>
-  );
-}
 
 export default function Stats() {
   const { data, clear } = useChatData();

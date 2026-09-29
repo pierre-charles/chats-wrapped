@@ -2,7 +2,8 @@ import * as Highcharts from "highcharts";
 import { HighchartsReact } from "highcharts-react-official";
 import { useEffect, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { lineChart, useChartColors } from "../lib/charts";
+import { Heatmap } from "../components/heatmap";
+import { barChart, lineChart, useChartColors } from "../lib/charts";
 import { useChatData } from "../lib/chat-context";
 import { MEDIA_LABELS, UserSlugParamsSchema } from "../lib/schemas";
 import { fmt, sortDesc } from "../lib/utils";
@@ -57,6 +58,18 @@ export default function User() {
   if (!data || !stats || !user) {
     return null;
   }
+
+  const userEmojis = sortDesc(stats.emojisUsedByUser[user] ?? {}).slice(0, 10);
+  const userWords = sortDesc(stats.wordsUsedByUser[user] ?? {}).slice(0, 10);
+  const userActiveHours = stats.activeHoursByUser[user] ?? {
+    Monday: {},
+    Tuesday: {},
+    Wednesday: {},
+    Thursday: {},
+    Friday: {},
+    Saturday: {},
+    Sunday: {},
+  };
 
   const totalMessages = stats.totalMessagesByUser[user] ?? 0;
   const deletedCount = stats.deletedMessagesCount[user] ?? 0;
@@ -120,6 +133,45 @@ export default function User() {
           options={lineChart(trendSeries, colors.text)}
         />
       </section>
+
+      {userEmojis.length > 0 && (
+        <section className="stats__section">
+          <h2>Top 10 emojis</h2>
+          <HighchartsReact
+            highcharts={Highcharts}
+            options={barChart(
+              userEmojis.map(([e]) => e),
+              userEmojis.map(([, c]) => c),
+              colors.emojis,
+              colors.text,
+            )}
+          />
+        </section>
+      )}
+
+      <section className="stats__section">
+        <h2>Active hours</h2>
+        <Heatmap
+          activeHours={userActiveHours}
+          color={colors.heatmap}
+          mutedColor={colors.muted}
+        />
+      </section>
+
+      {userWords.length > 0 && (
+        <section className="stats__section">
+          <h2>Top 10 words</h2>
+          <HighchartsReact
+            highcharts={Highcharts}
+            options={barChart(
+              userWords.map(([w]) => w),
+              userWords.map(([, c]) => c),
+              colors.words,
+              colors.text,
+            )}
+          />
+        </section>
+      )}
     </main>
   );
 }
