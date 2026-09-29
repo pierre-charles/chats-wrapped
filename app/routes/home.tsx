@@ -1,4 +1,10 @@
-import { type ChangeEvent, type DragEvent, useCallback, useState } from "react";
+import {
+  type ChangeEvent,
+  type DragEvent,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useNavigate } from "react-router";
 import { useChatData } from "../lib/chat-context";
 import { parseChatFile } from "../lib/parser";
@@ -21,6 +27,24 @@ export default function Home() {
   const [dragging, setDragging] = useState(false);
   const { setData } = useChatData();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch("/preloaded-chat.txt", { method: "HEAD" }).then((res) => {
+      if (!res.ok) return;
+      setLoading(true);
+      fetch("/preloaded-chat.txt")
+        .then((r) => r.text())
+        .then((content) => {
+          const result = parseChatFile(content);
+          if (result.success) {
+            setData(result.data);
+            navigate("/stats");
+          } else {
+            setLoading(false);
+          }
+        });
+    });
+  }, [setData, navigate]);
 
   const processFile = useCallback(
     async (file: File) => {
