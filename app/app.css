@@ -194,6 +194,7 @@ body {
   border-radius: 50%;
   background: var(--color-primary);
   animation: pulse 1.2s ease-in-out infinite;
+  margin: 0 auto;
 }
 
 .loader__text {
