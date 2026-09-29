@@ -1,6 +1,7 @@
 import { type ChangeEvent, type DragEvent, useCallback, useState } from "react";
 import { useNavigate } from "react-router";
 import { useChatData } from "../lib/chat-context";
+import { parseChatFile } from "../lib/parser";
 import { handleFileUpload } from "../lib/upload";
 import type { Route } from "./+types/home";
 
@@ -71,12 +72,30 @@ export default function Home() {
     [processFile],
   );
 
+  const loadSampleData = useCallback(async () => {
+    setError(null);
+    setLoading(true);
+
+    const response = await fetch("/mock-chat.txt");
+    const content = await response.text();
+    const result = parseChatFile(content);
+
+    if (!result.success) {
+      setError(result.error);
+      setLoading(false);
+      return;
+    }
+
+    setData(result.data);
+    navigate("/stats");
+  }, [setData, navigate]);
+
   return (
     <main className="upload-page">
       <div className="upload-subtitle">
         <p>
           Upload your WhatsApp chat export to see your stats. No data is stored
-          or sent anywhere — everything is processed entirely in your browser.
+          or sent anywhere, everything is processed entirely in your browser.
         </p>
         <p>
           Want to see for yourself?{" "}
@@ -106,6 +125,14 @@ export default function Home() {
               Choose file
               <input type="file" accept=".txt" onChange={onChange} hidden />
             </label>
+            <p className="upload-or">or</p>
+            <button
+              type="button"
+              className="upload-sample"
+              onClick={loadSampleData}
+            >
+              Try with sample data
+            </button>
           </>
         )}
       </div>

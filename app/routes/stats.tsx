@@ -1,10 +1,10 @@
 import * as Highcharts from "highcharts";
 import { HighchartsReact } from "highcharts-react-official";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { barChart, fmt, lineChart } from "../lib/charts";
 import { useChatData } from "../lib/chat-context";
-import type { MediaSent } from "../lib/schemas";
+import { type ActiveHours, DayOfWeekSchema } from "../lib/schemas";
 import { useTheme } from "../lib/theme";
 
 function resolveColor(varName: string): string {
@@ -25,8 +25,9 @@ function useChartColors() {
     deleted: "#c9304d",
     avgUser: "#0f766e",
     avgDay: "#c2610c",
+    heatmap: "#128c55",
     text: "#1a1a1a",
-    muted: "#595959"
+    muted: "#595959",
   });
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-resolve CSS vars when theme toggles
@@ -38,8 +39,9 @@ function useChartColors() {
         deleted: resolveColor("--chart-deleted"),
         avgUser: resolveColor("--chart-avg-user"),
         avgDay: resolveColor("--chart-avg-day"),
+        heatmap: resolveColor("--chart-heatmap"),
         text: resolveColor("--color-text"),
-        muted: resolveColor("--color-text-muted")
+        muted: resolveColor("--color-text-muted"),
       });
     });
   }, [theme]);
@@ -58,17 +60,79 @@ const formatDate = (date: Date) =>
     weekday: "short",
     year: "numeric",
     month: "short",
-    day: "numeric"
+    day: "numeric",
   }).format(date);
 
-const MEDIA_LABELS: [keyof MediaSent, string][] = [
+const DAYS = DayOfWeekSchema.options;
+const HOURS = Array.from({ length: 24 }, (_, i) => String(i)) as string[];
+
+function Heatmap({
+  activeHours,
+  color,
+  mutedColor,
+}: {
+  activeHours: ActiveHours;
+  color: string;
+  mutedColor: string;
+}) {
+  const maxCount = Math.max(
+    1,
+    ...DAYS.flatMap((d) => HOURS.map((h) => activeHours[d]?.[h] ?? 0)),
+  );
+  const sqrtMax = Math.sqrt(maxCount);
+
+  return (
+    <div className="heatmap">
+      <div className="heatmap__corner" />
+      {HOURS.map((h) => (
+        <div key={h} className="heatmap__hour" style={{ color: mutedColor }}>
+          {h.padStart(2, "0")}
+        </div>
+      ))}
+      {DAYS.map((day) => (
+        <Fragment key={day}>
+          <div className="heatmap__day" style={{ color: mutedColor }}>
+            {day.slice(0, 3)}
+          </div>
+          {HOURS.map((h) => {
+            const count = activeHours[day]?.[h] ?? 0;
+            const opacity = Math.sqrt(count) / sqrtMax;
+            return (
+              <div
+                key={h}
+                className="heatmap__cell"
+                style={{
+                  backgroundColor: color,
+                  opacity: Math.max(0.05, opacity),
+                }}
+                title={`${day} ${h.padStart(2, "0")}:00 — ${fmt(count)} messages`}
+              />
+            );
+          })}
+        </Fragment>
+      ))}
+      <div className="heatmap__key">
+        <span style={{ color: mutedColor }}>Less</span>
+        <div
+          className="heatmap__key-gradient"
+          style={{
+            background: `linear-gradient(to right, transparent, ${color})`,
+          }}
+        />
+        <span style={{ color: mutedColor }}>More</span>
+      </div>
+    </div>
+  );
+}
+
+const MEDIA_LABELS = [
   ["images", "Images sent"],
   ["gifs", "GIFs sent"],
   ["videos", "Videos sent"],
   ["audios", "Audio clips sent"],
   ["stickers", "Stickers sent"],
-  ["polls", "Polls sent"]
-];
+  ["polls", "Polls sent"],
+] as const;
 
 export default function Stats() {
   const { data, clear } = useChatData();
@@ -85,17 +149,17 @@ export default function Stats() {
 
   const messageSenders = useMemo(
     () => sortDesc(stats?.totalMessagesByUser ?? {}),
-    [stats]
+    [stats],
   );
 
   const topEmojis = useMemo(
     () => sortDesc(stats?.totalEmojisUsed ?? {}).slice(0, 10),
-    [stats]
+    [stats],
   );
 
   const deleters = useMemo(
     () => sortDesc(stats?.deletedMessagesCount ?? {}),
-    [stats]
+    [stats],
   );
 
   const monthlyTrendSeries = useMemo(() => {
@@ -115,8 +179,8 @@ export default function Stats() {
       type: "line" as const,
       data: data.messagesPerUserPerMonth.map(({ month, users }) => [
         new Date(`${month}-01`).getTime(),
-        users[user] ?? 0
-      ])
+        users[user] ?? 0,
+      ]),
     }));
   }, [data]);
 
@@ -127,24 +191,15 @@ export default function Stats() {
   const totalEmojis = sumValues(stats.totalEmojisUsed);
 
   const avgPerUser = [...stats.averageMessagePerUserPerDay].sort(
-    (a, b) => b.average - a.average
+    (a, b) => b.average - a.average,
   );
 
-  const dayOrder = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday"
-  ];
-  const avgPerDay = dayOrder
-    .filter((d) => stats.averageMessagePerIndividualDay[d])
-    .map((d) => ({
-      day: d,
-      ...stats.averageMessagePerIndividualDay[d]
-    }));
+  const avgPerDay = DAYS.filter(
+    (d) => stats.averageMessagePerIndividualDay[d],
+  ).map((d) => ({
+    day: d,
+    ...stats.averageMessagePerIndividualDay[d],
+  }));
 
   return (
     <main className="stats">
@@ -168,7 +223,7 @@ export default function Stats() {
             <a href="#summary">Summary</a>
           </li>
           <li>
-            <a href="#top-emojis">Top 10 emojis used</a>
+            <a href="#active-hours">Active hours</a>
           </li>
           <li>
             <a href="#messages-sent">Messages sent ranked</a>
@@ -177,13 +232,16 @@ export default function Stats() {
             <a href="#messages-trends">Messages sent trends</a>
           </li>
           <li>
-            <a href="#messages-deleted">Messages deleted ranked</a>
-          </li>
-          <li>
             <a href="#avg-per-person">Average daily messages per person</a>
           </li>
           <li>
             <a href="#avg-per-day">Average messages per day of week</a>
+          </li>
+          <li>
+            <a href="#top-emojis">Top 10 emojis used</a>
+          </li>
+          <li>
+            <a href="#messages-deleted">Messages deleted ranked</a>
           </li>
         </ol>
       </nav>
@@ -232,16 +290,12 @@ export default function Stats() {
         </div>
       </section>
 
-      <section className="stats__section" id="top-emojis">
-        <h2>Top 10 emojis used</h2>
-        <HighchartsReact
-          highcharts={Highcharts}
-          options={barChart(
-            topEmojis.map(([e]) => e),
-            topEmojis.map(([, c]) => c),
-            colors.emojis,
-            colors.text
-          )}
+      <section className="stats__section" id="active-hours">
+        <h2>Active hours</h2>
+        <Heatmap
+          activeHours={stats.activeHours}
+          color={colors.heatmap}
+          mutedColor={colors.muted}
         />
       </section>
 
@@ -253,7 +307,7 @@ export default function Stats() {
             messageSenders.map(([u]) => u),
             messageSenders.map(([, c]) => c),
             colors.messages,
-            colors.text
+            colors.text,
           )}
         />
       </section>
@@ -266,19 +320,6 @@ export default function Stats() {
         />
       </section>
 
-      <section className="stats__section" id="messages-deleted">
-        <h2>Messages deleted ranked</h2>
-        <HighchartsReact
-          highcharts={Highcharts}
-          options={barChart(
-            deleters.map(([u]) => u),
-            deleters.map(([, c]) => c),
-            colors.deleted,
-            colors.text
-          )}
-        />
-      </section>
-
       <section className="stats__section" id="avg-per-person">
         <h2>Average daily messages per person</h2>
         <HighchartsReact
@@ -287,7 +328,7 @@ export default function Stats() {
             avgPerUser.map((d) => d.user),
             avgPerUser.map((d) => d.average),
             colors.avgUser,
-            colors.text
+            colors.text,
           )}
         />
       </section>
@@ -300,7 +341,33 @@ export default function Stats() {
             avgPerDay.map((d) => d.day),
             avgPerDay.map((d) => d.average),
             colors.avgDay,
-            colors.text
+            colors.text,
+          )}
+        />
+      </section>
+
+      <section className="stats__section" id="top-emojis">
+        <h2>Top 10 emojis used</h2>
+        <HighchartsReact
+          highcharts={Highcharts}
+          options={barChart(
+            topEmojis.map(([e]) => e),
+            topEmojis.map(([, c]) => c),
+            colors.emojis,
+            colors.text,
+          )}
+        />
+      </section>
+
+      <section className="stats__section" id="messages-deleted">
+        <h2>Messages deleted ranked</h2>
+        <HighchartsReact
+          highcharts={Highcharts}
+          options={barChart(
+            deleters.map(([u]) => u),
+            deleters.map(([, c]) => c),
+            colors.deleted,
+            colors.text,
           )}
         />
       </section>
