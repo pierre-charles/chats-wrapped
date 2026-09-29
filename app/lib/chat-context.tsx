@@ -34,7 +34,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [data, setDataState] = useState<ChatData | null>(loadFromSession);
 
   function setData(chatData: ChatData) {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatData));
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatData));
+    } catch {
+      // Data too large for sessionStorage — works in-memory only
+    }
     setDataState(chatData);
   }
 
