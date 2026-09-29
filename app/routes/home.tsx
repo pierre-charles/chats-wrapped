@@ -33,6 +33,7 @@ export function meta(_args: Route.MetaArgs) {
 export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [preloaded, setPreloaded] = useState(false);
   const [dragging, setDragging] = useState(false);
   const { setData } = useChatData();
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ export default function Home() {
       if (!res.ok) {
         return;
       }
+      setPreloaded(true);
       setLoading(true);
       fetch("/preloaded-chat.txt")
         .then((r) => r.text())
@@ -125,6 +127,15 @@ export default function Home() {
     navigate("/stats");
   }, [setData, navigate]);
 
+  if (preloaded) {
+    return (
+      <main className="upload-page upload-page--centered">
+        <div className="loader" />
+        <p className="loader__text">Parsing your chat...</p>
+      </main>
+    );
+  }
+
   return (
     <main className="upload-page">
       <div className="upload-subtitle">
@@ -151,7 +162,10 @@ export default function Home() {
         onDragLeave={onDragLeave}
       >
         {loading ? (
-          <p>Parsing your chat...</p>
+          <>
+            <div className="loader" />
+            <p className="loader__text">Parsing your chat...</p>
+          </>
         ) : (
           <>
             <p>Drop your .txt file here</p>

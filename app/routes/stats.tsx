@@ -141,9 +141,7 @@ export default function Stats() {
         <div className="podium">
           {messageSenders.slice(0, 3).map(([name, count], i) => (
             <div key={name} className={`podium__place podium__place--${i + 1}`}>
-              <span className="podium__medal">
-                {["🥇", "🥈", "🥉"][i]}
-              </span>
+              <span className="podium__medal">{["🥇", "🥈", "🥉"][i]}</span>
               <span className="podium__name">{name}</span>
               <span className="podium__count">{fmt(count)} messages</span>
             </div>
