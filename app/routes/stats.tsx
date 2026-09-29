@@ -110,6 +110,9 @@ export default function Stats() {
             <a href="#summary">Summary</a>
           </li>
           <li>
+            <a href="#users">Users</a>
+          </li>
+          <li>
             <a href="#active-hours">Active hours</a>
           </li>
           <li>
@@ -129,9 +132,6 @@ export default function Stats() {
           </li>
           <li>
             <a href="#messages-deleted">Messages deleted ranked</a>
-          </li>
-          <li>
-            <a href="#users">Users</a>
           </li>
         </ol>
       </nav>
@@ -190,6 +190,25 @@ export default function Stats() {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      <section className="stats__section" id="users">
+        <h2>Users</h2>
+        <div className="user-list">
+          {messageSenders.map(([name, count]) => (
+            <Link
+              key={name}
+              to={`/stats/${SlugSchema.parse(name)}`}
+              className="user-list__item"
+            >
+              <span className="user-list__name">{name}</span>
+              <span className="user-list__bottom">
+                <span className="user-list__count">{fmt(count)} messages</span>
+                <span className="user-list__arrow">→</span>
+              </span>
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -275,24 +294,6 @@ export default function Stats() {
         />
       </section>
 
-      <section className="stats__section" id="users">
-        <h2>Users</h2>
-        <div className="user-list">
-          {messageSenders.map(([name, count]) => (
-            <Link
-              key={name}
-              to={`/stats/${SlugSchema.parse(name)}`}
-              className="user-list__item"
-            >
-              <span className="user-list__name">{name}</span>
-              <span className="user-list__bottom">
-                <span className="user-list__count">{fmt(count)} messages</span>
-                <span className="user-list__arrow">→</span>
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
     </main>
   );
 }
