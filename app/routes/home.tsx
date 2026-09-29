@@ -1,9 +1,4 @@
-import {
-  type ChangeEvent,
-  type DragEvent,
-  useCallback,
-  useState,
-} from "react";
+import { type ChangeEvent, type DragEvent, useCallback, useState } from "react";
 import { useNavigate } from "react-router";
 import { useChatData } from "../lib/chat-context";
 import { parseChatFile } from "../lib/parser";
