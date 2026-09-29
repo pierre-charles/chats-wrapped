@@ -2,12 +2,10 @@ import {
   type ChangeEvent,
   type DragEvent,
   useCallback,
-  useEffect,
   useState,
 } from "react";
 import { useNavigate } from "react-router";
 import { useChatData } from "../lib/chat-context";
-import { parseChatFile } from "../lib/parser";
 import { handleFileUpload } from "../lib/upload";
 import type { Route } from "./+types/home";
 
@@ -33,31 +31,9 @@ export function meta(_args: Route.MetaArgs) {
 export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [preloaded, setPreloaded] = useState(false);
   const [dragging, setDragging] = useState(false);
   const { setData } = useChatData();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    fetch("/preloaded-chat.txt", { method: "HEAD" }).then((res) => {
-      if (!res.ok) {
-        return;
-      }
-      setPreloaded(true);
-      setLoading(true);
-      fetch("/preloaded-chat.txt")
-        .then((r) => r.text())
-        .then((content) => {
-          const result = parseChatFile(content);
-          if (result.success) {
-            setData(result.data);
-            navigate("/stats");
-          } else {
-            setLoading(false);
-          }
-        });
-    });
-  }, [setData, navigate]);
 
   const processFile = useCallback(
     async (file: File) => {
@@ -126,15 +102,6 @@ export default function Home() {
     setData(result.data);
     navigate("/stats");
   }, [setData, navigate]);
-
-  if (preloaded) {
-    return (
-      <main className="upload-page upload-page--centered">
-        <div className="loader" />
-        <p className="loader__text">Parsing your chat...</p>
-      </main>
-    );
-  }
 
   return (
     <main className="upload-page">

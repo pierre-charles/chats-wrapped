@@ -167,15 +167,6 @@ body {
   cursor: pointer;
 }
 
-.upload-page--centered {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  grid-template-columns: unset;
-  gap: var(--space-4);
-}
-
 @keyframes pulse {
   0%,
   100% {
