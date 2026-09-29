@@ -12,12 +12,21 @@ import { handleFileUpload } from "../lib/upload";
 import type { Route } from "./+types/home";
 
 export function meta(_args: Route.MetaArgs) {
+  const description =
+    "Upload your WhatsApp chat export and get instant stats — message counts, activity heatmaps, emoji rankings, trends and more. 100% private, everything runs in your browser.";
   return [
-    { title: "Chats Wrapped" },
-    {
-      name: "description",
-      content: "Upload your WhatsApp chat export to see your stats",
-    },
+    { title: "Chats Wrapped — WhatsApp Chat Stats" },
+    { name: "description", content: description },
+    { property: "og:title", content: "Chats Wrapped — WhatsApp Chat Stats" },
+    { property: "og:description", content: description },
+    { property: "og:type", content: "website" },
+    { property: "og:image", content: "/og.png" },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:image", content: "/og.png" },
+    { name: "twitter:title", content: "Chats Wrapped — WhatsApp Chat Stats" },
+    { name: "twitter:description", content: description },
   ];
 }
 
@@ -30,7 +39,9 @@ export default function Home() {
 
   useEffect(() => {
     fetch("/preloaded-chat.txt", { method: "HEAD" }).then((res) => {
-      if (!res.ok) return;
+      if (!res.ok) {
+        return;
+      }
       setLoading(true);
       fetch("/preloaded-chat.txt")
         .then((r) => r.text())

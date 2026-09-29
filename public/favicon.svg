@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="ChatsWrapped">
+  <rect width="32" height="32" rx="6" fill="#fcf5eb"/>
+  <text x="3" y="23" font-family="system-ui,sans-serif" font-weight="700" font-size="16">
+    <tspan fill="#1a1a1a">C</tspan><tspan fill="#128c55">W</tspan>
+  </text>
+</svg>
