@@ -10,24 +10,24 @@ function base(textColor: string): Highcharts.Options {
     chart: {
       backgroundColor: "transparent",
       borderColor: "transparent",
-      style: { fontFamily: "Geist, system-ui, sans-serif" }
+      style: { fontFamily: "Geist, system-ui, sans-serif" },
     },
     tooltip: {
       enabled: true,
       style: { fontSize: "14px" },
       formatter() {
         return fmt((this as unknown as { y: number }).y);
-      }
+      },
     },
     xAxis: {
-      labels: { style: { fontSize: "14px", color: textColor } }
+      labels: { style: { fontSize: "14px", color: textColor } },
     },
     yAxis: {
       title: { text: "" },
       labels: { style: { fontSize: "14px", color: textColor } },
       gridLineColor: "transparent",
-      min: 0
-    }
+      min: 0,
+    },
   };
 }
 
@@ -35,7 +35,7 @@ export function barChart(
   categories: string[],
   data: number[],
   color: string,
-  textColor = "#1a1a1a"
+  textColor = "#1a1a1a",
 ): Highcharts.Options {
   const b = base(textColor);
   return {
@@ -43,15 +43,15 @@ export function barChart(
     xAxis: {
       ...b.xAxis,
       categories,
-      labels: { ...(b.xAxis as Highcharts.XAxisOptions).labels, step: 1 }
+      labels: { ...(b.xAxis as Highcharts.XAxisOptions).labels, step: 1 },
     },
-    series: [{ type: "bar", data, color, borderWidth: 0 }]
+    series: [{ type: "bar", data, color, borderWidth: 0 }],
   };
 }
 
 export function lineChart(
   series: Highcharts.SeriesOptionsType[],
-  textColor = "#1a1a1a"
+  textColor = "#1a1a1a",
 ): Highcharts.Options {
   const b = base(textColor);
   return {
@@ -60,13 +60,13 @@ export function lineChart(
     chart: { ...b.chart, type: "line" },
     xAxis: {
       type: "datetime",
-      labels: { style: { fontSize: "14px", color: textColor } }
+      labels: { style: { fontSize: "14px", color: textColor } },
     },
     tooltip: {
       ...b.tooltip,
-      shared: false
+      shared: false,
     },
-    series
+    series,
   };
 }
 

@@ -9,8 +9,8 @@ export function meta(_args: Route.MetaArgs) {
     { title: "Chats Wrapped" },
     {
       name: "description",
-      content: "Upload your WhatsApp chat export to see your stats"
-    }
+      content: "Upload your WhatsApp chat export to see your stats",
+    },
   ];
 }
 
@@ -37,7 +37,7 @@ export default function Home() {
       setData(result.data);
       navigate("/stats");
     },
-    [setData, navigate]
+    [setData, navigate],
   );
 
   const onDrop = useCallback(
@@ -49,7 +49,7 @@ export default function Home() {
         processFile(file);
       }
     },
-    [processFile]
+    [processFile],
   );
 
   const onDragOver = useCallback((e: DragEvent<HTMLDivElement>) => {
@@ -68,7 +68,7 @@ export default function Home() {
         processFile(file);
       }
     },
-    [processFile]
+    [processFile],
   );
 
   return (

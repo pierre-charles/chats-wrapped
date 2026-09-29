@@ -2,5 +2,5 @@ import { index, type RouteConfig, route } from "@react-router/dev/routes";
 
 export default [
   index("routes/home.tsx"),
-  route("stats", "routes/stats.tsx")
+  route("stats", "routes/stats.tsx"),
 ] satisfies RouteConfig;
