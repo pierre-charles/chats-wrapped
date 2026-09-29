@@ -19,8 +19,8 @@ import {
   type UserCount,
 } from "./schemas";
 
-/** Matches visible emoji characters (excludes text-style emoji like digits) */
-const EMOJI_REGEX = /\p{Emoji_Presentation}/gu;
+/** Matches all emoji including skin tones, flags, and variation selectors like ❤️ */
+const EMOJI_REGEX = /\p{RGI_Emoji}/gv;
 
 const MediaCheckSchema = z.tuple([z.string(), MediaSentSchema.keyof()]);
 
