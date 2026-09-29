@@ -1,59 +1,16 @@
 import * as Highcharts from "highcharts";
 import { HighchartsReact } from "highcharts-react-official";
-import { Fragment, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
-import { barChart, fmt, lineChart } from "../lib/charts";
+import { Fragment, useEffect, useMemo } from "react";
+import { Link, useNavigate } from "react-router";
+import { barChart, lineChart, useChartColors } from "../lib/charts";
 import { useChatData } from "../lib/chat-context";
-import { type ActiveHours, DayOfWeekSchema } from "../lib/schemas";
-import { useTheme } from "../lib/theme";
-
-function resolveColor(varName: string): string {
-  const el = document.createElement("div");
-  el.style.display = "none";
-  el.style.color = `var(${varName})`;
-  document.body.appendChild(el);
-  const resolved = getComputedStyle(el).color;
-  el.remove();
-  return resolved;
-}
-
-function useChartColors() {
-  const { theme } = useTheme();
-  const [colors, setColors] = useState({
-    emojis: "#2b7a9e",
-    messages: "#a569bd",
-    deleted: "#c9304d",
-    avgUser: "#0f766e",
-    avgDay: "#c2610c",
-    heatmap: "#128c55",
-    text: "#1a1a1a",
-    muted: "#595959",
-  });
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: re-resolve CSS vars when theme toggles
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      setColors({
-        emojis: resolveColor("--chart-emojis"),
-        messages: resolveColor("--chart-messages"),
-        deleted: resolveColor("--chart-deleted"),
-        avgUser: resolveColor("--chart-avg-user"),
-        avgDay: resolveColor("--chart-avg-day"),
-        heatmap: resolveColor("--chart-heatmap"),
-        text: resolveColor("--color-text"),
-        muted: resolveColor("--color-text-muted"),
-      });
-    });
-  }, [theme]);
-
-  return colors;
-}
-
-const sortDesc = (data: Record<string, number>) =>
-  Object.entries(data).sort((a, b) => b[1] - a[1]);
-
-const sumValues = (obj: Record<string, number>) =>
-  Object.values(obj).reduce((a, b) => a + b, 0);
+import {
+  type ActiveHours,
+  DayOfWeekSchema,
+  MEDIA_LABELS,
+  SlugSchema,
+} from "../lib/schemas";
+import { fmt, sortDesc, sumValues } from "../lib/utils";
 
 const formatDate = (date: Date) =>
   new Intl.DateTimeFormat("en-GB", {
@@ -124,15 +81,6 @@ function Heatmap({
     </div>
   );
 }
-
-const MEDIA_LABELS = [
-  ["images", "Images sent"],
-  ["gifs", "GIFs sent"],
-  ["videos", "Videos sent"],
-  ["audios", "Audio clips sent"],
-  ["stickers", "Stickers sent"],
-  ["polls", "Polls sent"],
-] as const;
 
 export default function Stats() {
   const { data, clear } = useChatData();
@@ -223,6 +171,9 @@ export default function Stats() {
             <a href="#summary">Summary</a>
           </li>
           <li>
+            <a href="#users">Users</a>
+          </li>
+          <li>
             <a href="#active-hours">Active hours</a>
           </li>
           <li>
@@ -287,6 +238,22 @@ export default function Stats() {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      <section className="stats__section" id="users">
+        <h2>Users</h2>
+        <div className="user-list">
+          {messageSenders.map(([name, count]) => (
+            <Link
+              key={name}
+              to={`/stats/${SlugSchema.parse(name)}`}
+              className="user-list__item"
+            >
+              <span className="user-list__name">{name}</span>
+              <span className="user-list__count">{fmt(count)} messages</span>
+            </Link>
+          ))}
         </div>
       </section>
 

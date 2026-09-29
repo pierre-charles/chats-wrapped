@@ -1,8 +1,29 @@
-import { createContext, type ReactNode, useContext, useState } from "react";
-import type { ChatData } from "./schemas";
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
+import { type ChatData, ChatDataSchema, SlugSchema } from "./schemas";
+
+const STORAGE_KEY = "chats-wrapped-data";
+
+function loadFromSession(): ChatData | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  const raw = sessionStorage.getItem(STORAGE_KEY);
+  if (!raw) {
+    return null;
+  }
+  const result = ChatDataSchema.safeParse(JSON.parse(raw));
+  return result.success ? result.data : null;
+}
 
 type ChatContextValue = {
   data: ChatData | null;
+  slugMap: Map<string, string>;
   setData: (data: ChatData) => void;
   clear: () => void;
 };
@@ -10,10 +31,30 @@ type ChatContextValue = {
 const ChatContext = createContext<ChatContextValue | null>(null);
 
 export function ChatProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<ChatData | null>(null);
+  const [data, setDataState] = useState<ChatData | null>(loadFromSession);
+
+  function setData(chatData: ChatData) {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatData));
+    setDataState(chatData);
+  }
+
+  const slugMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (data) {
+      for (const name of data.users) {
+        map.set(SlugSchema.parse(name), name);
+      }
+    }
+    return map;
+  }, [data]);
+
+  function clear() {
+    sessionStorage.removeItem(STORAGE_KEY);
+    setDataState(null);
+  }
 
   return (
-    <ChatContext value={{ data, setData, clear: () => setData(null) }}>
+    <ChatContext value={{ data, slugMap, setData, clear }}>
       {children}
     </ChatContext>
   );

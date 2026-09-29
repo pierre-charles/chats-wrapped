@@ -1,6 +1,50 @@
 import type * as Highcharts from "highcharts";
+import { useEffect, useState } from "react";
+import { useTheme } from "./theme";
 
-const fmt = (n: number) => Intl.NumberFormat("en-GB").format(n);
+import { fmt } from "./utils";
+
+function resolveColor(varName: string): string {
+  const el = document.createElement("div");
+  el.style.display = "none";
+  el.style.color = `var(${varName})`;
+  document.body.appendChild(el);
+  const resolved = getComputedStyle(el).color;
+  el.remove();
+  return resolved;
+}
+
+export function useChartColors() {
+  const { theme } = useTheme();
+  const [colors, setColors] = useState({
+    emojis: "#2b7a9e",
+    messages: "#a569bd",
+    deleted: "#c9304d",
+    avgUser: "#0f766e",
+    avgDay: "#c2610c",
+    heatmap: "#128c55",
+    text: "#1a1a1a",
+    muted: "#595959",
+  });
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-resolve CSS vars when theme toggles
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      setColors({
+        emojis: resolveColor("--chart-emojis"),
+        messages: resolveColor("--chart-messages"),
+        deleted: resolveColor("--chart-deleted"),
+        avgUser: resolveColor("--chart-avg-user"),
+        avgDay: resolveColor("--chart-avg-day"),
+        heatmap: resolveColor("--chart-heatmap"),
+        text: resolveColor("--color-text"),
+        muted: resolveColor("--color-text-muted"),
+      });
+    });
+  }, [theme]);
+
+  return colors;
+}
 
 function base(textColor: string): Highcharts.Options {
   return {
@@ -70,4 +114,4 @@ export function lineChart(
   };
 }
 
-export { fmt };
+export { fmt } from "./utils";

@@ -281,6 +281,33 @@ body {
   font-size: 0.8rem;
 }
 
+/* User list */
+
+.user-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.user-list__item {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+.user-list__item:hover {
+  background: var(--color-bg);
+}
+
+.user-list__count {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
 /* Heatmap */
 
 .heatmap {

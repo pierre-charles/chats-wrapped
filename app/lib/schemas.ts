@@ -23,7 +23,7 @@ export const RawMessageSchema = z.string().transform((rawLine, context) => {
 });
 
 export const MessageSchema = z.object({
-  date: z.date(),
+  date: z.coerce.date(),
   time: z.string(),
   user: z.string(),
   content: z.string(),
@@ -58,7 +58,7 @@ export const HourCountSchema = z.record(z.string(), z.number());
 export type HourCount = z.infer<typeof HourCountSchema>;
 
 export const DayStatsSchema = z.object({
-  date: z.date(),
+  date: z.coerce.date(),
   totalMessages: z.number(),
   messageCount: UserCountSchema,
   emojisUsed: z.array(EmojiCountSchema),
@@ -87,7 +87,7 @@ export type DayAverage = z.infer<typeof DayAverageSchema>;
 
 export const ActiveDaySchema = z.object({
   totalMessages: z.number(),
-  date: z.date(),
+  date: z.coerce.date(),
 });
 
 export type ActiveDay = z.infer<typeof ActiveDaySchema>;
@@ -145,7 +145,7 @@ export const ChatDataSchema = z.object({
   messagesPerUserPerMonth: z.array(MonthlyMessagesSchema),
   dayStats: z.array(DayStatsSchema),
   users: z.array(z.string()),
-  lastUpdated: z.date(),
+  lastUpdated: z.coerce.date(),
 });
 
 export type ChatData = z.infer<typeof ChatDataSchema>;
@@ -156,3 +156,18 @@ export const ParseResultSchema = z.discriminatedUnion("success", [
 ]);
 
 export type ParseResult = z.infer<typeof ParseResultSchema>;
+
+export const SlugSchema = z
+  .string()
+  .transform((s) => s.toLowerCase().replace(/\s+/g, "-"));
+
+export const UserSlugParamsSchema = z.object({ slug: SlugSchema });
+
+export const MEDIA_LABELS = [
+  ["images", "Images sent"],
+  ["gifs", "GIFs sent"],
+  ["videos", "Videos sent"],
+  ["audios", "Audio clips sent"],
+  ["stickers", "Stickers sent"],
+  ["polls", "Polls sent"],
+] as const;
