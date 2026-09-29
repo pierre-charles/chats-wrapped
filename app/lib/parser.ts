@@ -3,16 +3,19 @@ import {
   type ActiveDay,
   type ActiveHours,
   type AggregatedStats,
+  AggregatedStatsSchema,
   ChatDataSchema,
   type DayAverage,
   type DayOfWeekSchema,
   type DayStats,
+  DayStatsSchema,
   type HourCount,
   type MediaSent,
   MediaSentSchema,
   type Message,
   type MonthlyMessages,
   type ParseResult,
+  RawMessageSchema,
   type UserCount,
 } from "./schemas";
 import { STOPWORDS } from "./stopwords";
@@ -66,21 +69,9 @@ const DAY_BY_INDEX = [
   "Saturday",
 ] as const satisfies z.infer<typeof DayOfWeekSchema>[];
 
-const MESSAGE_REGEX =
-  /^\[(\d{2}\/\d{2}\/\d{4}), (\d{2}:\d{2}:\d{2})\] (.+?): (.+)$/;
-
 function parseMessage(line: string): Message | null {
-  const match = line.match(MESSAGE_REGEX);
-  if (!match) {
-    return null;
-  }
-  const [, date, time, user, content] = match;
-  return {
-    date: new Date(date.split("/").reverse().join("-")),
-    time,
-    user,
-    content,
-  };
+  const result = RawMessageSchema.safeParse(line);
+  return result.success ? result.data : null;
 }
 
 function countEmojis(message: string): UserCount {
@@ -181,7 +172,7 @@ function buildDayStats(
     }
   }
 
-  return {
+  return DayStatsSchema.parse({
     date,
     totalMessages: messages.length,
     messageCount,
@@ -196,7 +187,7 @@ function buildDayStats(
     emojisUsedByUser,
     wordFrequencyByUser,
     hourlyMessagesByUser,
-  } satisfies DayStats;
+  });
 }
 
 export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
@@ -344,7 +335,7 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
     );
   }
 
-  return {
+  return AggregatedStatsSchema.parse({
     days: totalDays,
     totalMessages,
     averageMessagePerDay,
@@ -361,7 +352,7 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
     emojisUsedByUser,
     wordsUsedByUser: cappedWordsByUser,
     activeHoursByUser,
-  } satisfies AggregatedStats;
+  });
 }
 
 export function parseChatFile(content: string): ParseResult {
