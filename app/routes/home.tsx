@@ -73,10 +73,22 @@ export default function Home() {
 
   return (
     <main className="upload-page">
-      <p className="upload-subtitle">
-        Upload your WhatsApp chat export to see your stats. Your data never
-        leaves your browser.
-      </p>
+      <div className="upload-subtitle">
+        <p>
+          Upload your WhatsApp chat export to see your stats. No data is stored
+          or sent anywhere — everything is processed entirely in your browser.
+        </p>
+        <p>
+          Want to see for yourself?{" "}
+          <a
+            href="https://github.com/pierre-charles/chats-wrapped/blob/main/app/lib/parser.ts"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Check out the code
+          </a>
+        </p>
+      </div>
       {/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop target */}
       <div
         className={`upload-dropzone ${dragging ? "upload-dropzone--active" : ""}`}

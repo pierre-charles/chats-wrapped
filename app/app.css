@@ -22,12 +22,23 @@
   --color-error: light-dark(#c9304d, #f15c80);
   --color-border: light-dark(#000, #444);
   --card-radius: 20px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-9: 36px;
+  --space-10: 40px;
   --chart-emojis: light-dark(#2b7a9e, #7fb3d5);
   --chart-messages: light-dark(#a569bd, #a569bd);
   --chart-deleted: light-dark(#c9304d, #f15c80);
   --chart-avg-user: light-dark(#0f766e, #73c6b6);
   --chart-avg-day: light-dark(#c2610c, #f7a35c);
   --chart-trend: light-dark(#e74c3c, #e74c3c);
+  --chart-heatmap: light-dark(#128c55, #f7a35c);
 }
 
 html {
@@ -106,6 +117,15 @@ body {
   margin: 0;
   line-height: 1.5;
   font-size: 1.125rem;
+}
+
+.upload-subtitle p {
+  margin: 0 0 var(--space-2);
+}
+
+.upload-subtitle a {
+  color: var(--color-primary);
+  text-decoration: underline;
 }
 
 @media (max-width: 600px) {
@@ -248,4 +268,52 @@ body {
 .summary__card small {
   color: var(--color-text-muted);
   font-size: 0.8rem;
+}
+
+/* Heatmap */
+
+.heatmap {
+  display: grid;
+  grid-template-columns: auto repeat(24, 1fr);
+  gap: 2px;
+  overflow-x: auto;
+}
+
+.heatmap__corner {
+  width: 36px;
+}
+
+.heatmap__hour {
+  font-size: 0.625rem;
+  text-align: center;
+}
+
+.heatmap__day {
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 6px;
+}
+
+.heatmap__cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  min-width: 12px;
+}
+
+.heatmap__key {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.75rem;
+}
+
+.heatmap__key-gradient {
+  width: 100px;
+  height: 10px;
+  border-radius: 3px;
 }
