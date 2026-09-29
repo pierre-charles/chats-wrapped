@@ -22,6 +22,19 @@ import {
 /** Matches all emoji including skin tones, flags, and variation selectors like ❤️ */
 const EMOJI_REGEX = /\p{RGI_Emoji}/gv;
 
+const EXCLUDED_USERS = new Set(["meta ai"]);
+
+const SYSTEM_MESSAGES = [
+  "end-to-end encrypted",
+  "changed the group",
+  "added you",
+  "removed you",
+  "left the group",
+  "changed the subject",
+  "changed this group",
+  "created group",
+] as const;
+
 const MediaCheckSchema = z.tuple([z.string(), MediaSentSchema.keyof()]);
 
 const MEDIA_CHECKS = [
@@ -51,6 +64,197 @@ const EXCLUDED_WORDS = new Set([
   "sticker",
   "gif",
   "image",
+  "the",
+  "a",
+  "an",
+  "and",
+  "or",
+  "but",
+  "in",
+  "on",
+  "at",
+  "to",
+  "for",
+  "of",
+  "is",
+  "it",
+  "its",
+  "be",
+  "am",
+  "are",
+  "was",
+  "were",
+  "been",
+  "being",
+  "have",
+  "has",
+  "had",
+  "do",
+  "does",
+  "did",
+  "will",
+  "would",
+  "could",
+  "should",
+  "may",
+  "might",
+  "shall",
+  "can",
+  "need",
+  "must",
+  "not",
+  "no",
+  "nor",
+  "so",
+  "if",
+  "then",
+  "than",
+  "too",
+  "very",
+  "just",
+  "about",
+  "up",
+  "out",
+  "by",
+  "from",
+  "with",
+  "as",
+  "into",
+  "through",
+  "during",
+  "before",
+  "after",
+  "above",
+  "below",
+  "between",
+  "under",
+  "again",
+  "further",
+  "once",
+  "here",
+  "there",
+  "when",
+  "where",
+  "why",
+  "how",
+  "all",
+  "each",
+  "every",
+  "both",
+  "few",
+  "more",
+  "most",
+  "other",
+  "some",
+  "such",
+  "only",
+  "own",
+  "same",
+  "that",
+  "this",
+  "these",
+  "those",
+  "what",
+  "which",
+  "who",
+  "whom",
+  "me",
+  "my",
+  "we",
+  "our",
+  "you",
+  "your",
+  "he",
+  "him",
+  "his",
+  "she",
+  "her",
+  "they",
+  "them",
+  "their",
+  "im",
+  "dont",
+  "didnt",
+  "cant",
+  "wont",
+  "isnt",
+  "arent",
+  "wasnt",
+  "werent",
+  "hasnt",
+  "havent",
+  "hadnt",
+  "doesnt",
+  "shouldnt",
+  "wouldnt",
+  "couldnt",
+  "ive",
+  "youre",
+  "hes",
+  "shes",
+  "theyre",
+  "youve",
+  "weve",
+  "theyve",
+  "ill",
+  "youll",
+  "hell",
+  "shell",
+  "well",
+  "theyll",
+  "id",
+  "youd",
+  "hed",
+  "shed",
+  "wed",
+  "theyd",
+  "also",
+  "still",
+  "already",
+  "even",
+  "much",
+  "many",
+  "any",
+  "got",
+  "get",
+  "go",
+  "going",
+  "gone",
+  "come",
+  "came",
+  "make",
+  "made",
+  "like",
+  "know",
+  "think",
+  "want",
+  "see",
+  "look",
+  "say",
+  "said",
+  "tell",
+  "told",
+  "give",
+  "take",
+  "put",
+  "let",
+  "yeah",
+  "yes",
+  "ok",
+  "okay",
+  "oh",
+  "ah",
+  "lol",
+  "haha",
+  "hahaha",
+  "message",
+  "deleted",
+  "edited",
+  "http",
+  "https",
+  "www",
+  "com",
+  "org",
 ]);
 
 function parseMessage(line: string): Message | null {
@@ -89,6 +293,9 @@ function buildDayStats(
 
   const deletedMessages: UserCount = {};
   const hourlyMessages: HourCount = {};
+  const emojisUsedByUser: Record<string, UserCount> = {};
+  const wordFrequencyByUser: Record<string, UserCount> = {};
+  const hourlyMessagesByUser: Record<string, HourCount> = {};
 
   for (const user of allUsers) {
     messageCount[user] ??= 0;
@@ -100,6 +307,9 @@ function buildDayStats(
 
     const hour = m.time.split(":")[0];
     hourlyMessages[hour] = (hourlyMessages[hour] ?? 0) + 1;
+    hourlyMessagesByUser[m.user] ??= {};
+    hourlyMessagesByUser[m.user][hour] =
+      (hourlyMessagesByUser[m.user][hour] ?? 0) + 1;
 
     if (
       m.content.includes("This message was deleted") ||
@@ -108,8 +318,16 @@ function buildDayStats(
       deletedMessages[m.user] = (deletedMessages[m.user] ?? 0) + 1;
     }
 
-    for (const [emoji, count] of Object.entries(countEmojis(m.content))) {
+    const emojiCounts = countEmojis(m.content);
+    for (const [emoji, count] of Object.entries(emojiCounts)) {
       emojisUsed[emoji] = (emojisUsed[emoji] ?? 0) + count;
+    }
+    if (Object.keys(emojiCounts).length > 0) {
+      emojisUsedByUser[m.user] ??= {};
+      for (const [emoji, count] of Object.entries(emojiCounts)) {
+        emojisUsedByUser[m.user][emoji] =
+          (emojisUsedByUser[m.user][emoji] ?? 0) + count;
+      }
     }
 
     const lower = m.content.toLowerCase();
@@ -126,6 +344,9 @@ function buildDayStats(
         continue;
       }
       wordFrequency[word] = (wordFrequency[word] ?? 0) + 1;
+      wordFrequencyByUser[m.user] ??= {};
+      wordFrequencyByUser[m.user][word] =
+        (wordFrequencyByUser[m.user][word] ?? 0) + 1;
     }
 
     for (const [keyword, bucket] of MEDIA_CHECKS) {
@@ -151,6 +372,9 @@ function buildDayStats(
     mediaSent: media,
     wordFrequency,
     hourlyMessages,
+    emojisUsedByUser,
+    wordFrequencyByUser,
+    hourlyMessagesByUser,
   });
 }
 
@@ -179,6 +403,9 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
     Sunday: {},
   };
   const wordsSentCount = new Map<string, number>();
+  const emojisUsedByUser: Record<string, Record<string, number>> = {};
+  const wordsUsedByUser: Record<string, Map<string, number>> = {};
+  const activeHoursByUser: Record<string, ActiveHours> = {};
   let totalMessages = 0;
   let mostActiveDay: ActiveDay = {
     totalMessages: 0,
@@ -240,6 +467,41 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
     for (const [hour, count] of Object.entries(day.hourlyMessages)) {
       activeHours[dayName][hour] = (activeHours[dayName][hour] ?? 0) + count;
     }
+
+    for (const [user, emojiMap] of Object.entries(day.emojisUsedByUser)) {
+      emojisUsedByUser[user] ??= {};
+      for (const [emoji, count] of Object.entries(emojiMap)) {
+        emojisUsedByUser[user][emoji] =
+          (emojisUsedByUser[user][emoji] ?? 0) + count;
+      }
+    }
+
+    for (const [user, wordMap] of Object.entries(day.wordFrequencyByUser)) {
+      wordsUsedByUser[user] ??= new Map();
+      for (const [word, count] of Object.entries(wordMap)) {
+        wordsUsedByUser[user].set(
+          word,
+          (wordsUsedByUser[user].get(word) ?? 0) + count,
+        );
+      }
+    }
+
+    for (const [user, hourMap] of Object.entries(day.hourlyMessagesByUser)) {
+      activeHoursByUser[user] ??= {
+        Monday: {},
+        Tuesday: {},
+        Wednesday: {},
+        Thursday: {},
+        Friday: {},
+        Saturday: {},
+        Sunday: {},
+      };
+      activeHoursByUser[user][dayName] ??= {};
+      for (const [hour, count] of Object.entries(hourMap)) {
+        activeHoursByUser[user][dayName][hour] =
+          (activeHoursByUser[user][dayName][hour] ?? 0) + count;
+      }
+    }
   }
 
   const totalDays = dayObjects.length;
@@ -253,6 +515,13 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
   }
 
   const sortedWords = new Map([...wordsSentCount].sort((a, b) => b[1] - a[1]));
+
+  const cappedWordsByUser: Record<string, Record<string, number>> = {};
+  for (const [user, wordMap] of Object.entries(wordsUsedByUser)) {
+    cappedWordsByUser[user] = Object.fromEntries(
+      [...wordMap].sort((a, b) => b[1] - a[1]).slice(0, 20),
+    );
+  }
 
   return AggregatedStatsSchema.parse({
     days: totalDays,
@@ -268,6 +537,9 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
     mostActiveDay,
     leastActiveDay,
     activeHours,
+    emojisUsedByUser,
+    wordsUsedByUser: cappedWordsByUser,
+    activeHoursByUser,
   });
 }
 
@@ -292,6 +564,15 @@ export function parseChatFile(content: string): ParseResult {
       .replace("<This message was edited>", "")
       .replace(/</g, "")
       .replace(/>/g, "");
+
+    if (EXCLUDED_USERS.has(parsed.user.toLowerCase())) {
+      continue;
+    }
+
+    const lower = parsed.content.toLowerCase();
+    if (SYSTEM_MESSAGES.some((msg) => lower.includes(msg))) {
+      continue;
+    }
 
     users.add(parsed.user);
 
