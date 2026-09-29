@@ -23,17 +23,30 @@ import { STOPWORDS } from "./stopwords";
 /** Matches all emoji including skin tones, flags, and variation selectors like ❤️ */
 const EMOJI_REGEX = /\p{RGI_Emoji}/gv;
 
-const EXCLUDED_USERS = new Set(["meta ai"]);
+const EXCLUDED_USERS = new Set(["meta ai", "you"]);
 
 const SYSTEM_MESSAGES = [
   "end-to-end encrypted",
   "changed the group",
+  "changed the description",
+  "changed this group's icon",
+  "changed this group's settings",
+  "turned on admin approval",
+  "turned off admin approval",
   "added you",
   "removed you",
   "left the group",
+  "joined using this group's invite link",
   "changed the subject",
   "changed this group",
   "created group",
+  "pinned a message",
+  "you were added",
+  "security code changed",
+  "disappeared",
+  "turned on advanced chat privacy",
+  "turned off advanced chat privacy",
+  "only messages that mention",
 ] as const;
 
 const MediaCheckSchema = z.tuple([z.string(), MediaSentSchema.keyof()]);
@@ -359,6 +372,7 @@ export function parseChatFile(content: string): ParseResult {
       continue;
     }
 
+    parsed.user = parsed.user.replace(/^~ /, "");
     parsed.content = parsed.content
       .replace("<This message was edited>", "")
       .replace(/</g, "")
