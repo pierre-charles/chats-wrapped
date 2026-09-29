@@ -40,7 +40,7 @@ export function barChart(
   const b = base(textColor);
   return {
     ...b,
-    xAxis: { ...b.xAxis, categories },
+    xAxis: { ...b.xAxis, categories, labels: { ...(b.xAxis as Highcharts.XAxisOptions).labels, step: 1 } },
     series: [{ type: "bar", data, color, borderWidth: 0 }]
   };
 }

@@ -1,5 +1,27 @@
 import { z } from "zod";
 
+/** Matches WhatsApp message format: `[DD/MM/YYYY, HH:MM:SS] User: Content` */
+const MESSAGE_REGEX =
+  /^\[(\d{2}\/\d{2}\/\d{4}), (\d{2}:\d{2}:\d{2})\] (.+?): (.+)$/;
+
+export const RawMessageSchema = z.string().transform((rawLine, context) => {
+  const match = rawLine.match(MESSAGE_REGEX);
+  if (!match) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Invalid message format"
+    });
+    return z.NEVER;
+  }
+  const [, date, time, user, content] = match;
+  return {
+    date: new Date(date.split("/").reverse().join("-")),
+    time,
+    user: user.replace(/^~\s*/, "").trim(),
+    content
+  };
+});
+
 export const MessageSchema = z.object({
   date: z.date(),
   time: z.string(),
@@ -70,7 +92,17 @@ export const ActiveDaySchema = z.object({
 
 export type ActiveDay = z.infer<typeof ActiveDaySchema>;
 
-export const ActiveHoursSchema = z.record(z.string(), HourCountSchema);
+export const DayOfWeekSchema = z.enum([
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday"
+]);
+
+export const ActiveHoursSchema = z.record(DayOfWeekSchema, HourCountSchema);
 
 export type ActiveHours = z.infer<typeof ActiveHoursSchema>;
 
@@ -79,7 +111,7 @@ export const AggregatedStatsSchema = z.object({
   totalMessages: z.number(),
   averageMessagePerDay: z.number(),
   averageMessagePerUserPerDay: z.array(UserAverageSchema),
-  averageMessagePerIndividualDay: z.record(z.string(), DayAverageSchema),
+  averageMessagePerIndividualDay: z.record(DayOfWeekSchema, DayAverageSchema),
   totalMessagesByUser: UserCountSchema,
   totalEmojisUsed: UserCountSchema,
   totalMediaSent: MediaSentSchema,
@@ -117,3 +149,10 @@ export const ChatDataSchema = z.object({
 });
 
 export type ChatData = z.infer<typeof ChatDataSchema>;
+
+export const ParseResultSchema = z.discriminatedUnion("success", [
+  z.object({ success: z.literal(true), data: ChatDataSchema }),
+  z.object({ success: z.literal(false), error: z.string() })
+]);
+
+export type ParseResult = z.infer<typeof ParseResultSchema>;
