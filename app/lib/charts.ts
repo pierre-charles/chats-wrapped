@@ -13,7 +13,22 @@ function resolveColor(varName: string): string {
   return resolved;
 }
 
+const DEFAULT_COLORS = {
+  emojis: "#2b7a9e",
+  messages: "#a569bd",
+  deleted: "#c9304d",
+  avgUser: "#0f766e",
+  avgDay: "#c2610c",
+  words: "#6366f1",
+  heatmap: "#128c55",
+  text: "#1a1a1a",
+  muted: "#595959",
+};
+
 function resolveAll() {
+  if (typeof document === "undefined") {
+    return DEFAULT_COLORS;
+  }
   return {
     emojis: resolveColor("--chart-emojis"),
     messages: resolveColor("--chart-messages"),
@@ -28,11 +43,12 @@ function resolveAll() {
 }
 
 export function useChartColors() {
-  const [colors, setColors] = useState(resolveAll);
+  const [colors, setColors] = useState(DEFAULT_COLORS);
 
   useEffect(() => {
-    const mq = matchMedia("(prefers-color-scheme: dark)");
     const update = () => requestAnimationFrame(() => setColors(resolveAll()));
+    update();
+    const mq = matchMedia("(prefers-color-scheme: dark)");
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
   }, []);
