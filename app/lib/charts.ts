@@ -1,6 +1,5 @@
 import type * as Highcharts from "highcharts";
 import { useEffect, useState } from "react";
-import { useTheme } from "./theme";
 
 import { fmt } from "./utils";
 
@@ -14,36 +13,29 @@ function resolveColor(varName: string): string {
   return resolved;
 }
 
-export function useChartColors() {
-  const { theme } = useTheme();
-  const [colors, setColors] = useState({
-    emojis: "#2b7a9e",
-    messages: "#a569bd",
-    deleted: "#c9304d",
-    avgUser: "#0f766e",
-    avgDay: "#c2610c",
-    words: "#6366f1",
-    heatmap: "#128c55",
-    text: "#1a1a1a",
-    muted: "#595959",
-  });
+function resolveAll() {
+  return {
+    emojis: resolveColor("--chart-emojis"),
+    messages: resolveColor("--chart-messages"),
+    deleted: resolveColor("--chart-deleted"),
+    avgUser: resolveColor("--chart-avg-user"),
+    avgDay: resolveColor("--chart-avg-day"),
+    words: resolveColor("--chart-words"),
+    heatmap: resolveColor("--chart-heatmap"),
+    text: resolveColor("--color-text"),
+    muted: resolveColor("--color-text-muted"),
+  };
+}
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: re-resolve CSS vars when theme toggles
+export function useChartColors() {
+  const [colors, setColors] = useState(resolveAll);
+
   useEffect(() => {
-    requestAnimationFrame(() => {
-      setColors({
-        emojis: resolveColor("--chart-emojis"),
-        messages: resolveColor("--chart-messages"),
-        deleted: resolveColor("--chart-deleted"),
-        avgUser: resolveColor("--chart-avg-user"),
-        avgDay: resolveColor("--chart-avg-day"),
-        words: resolveColor("--chart-words"),
-        heatmap: resolveColor("--chart-heatmap"),
-        text: resolveColor("--color-text"),
-        muted: resolveColor("--color-text-muted"),
-      });
-    });
-  }, [theme]);
+    const mq = matchMedia("(prefers-color-scheme: dark)");
+    const update = () => requestAnimationFrame(() => setColors(resolveAll()));
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   return colors;
 }

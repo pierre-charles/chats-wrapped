@@ -10,8 +10,6 @@ import {
 
 import type { Route } from "./+types/root";
 import { ChatProvider } from "./lib/chat-context";
-import { ThemeProvider } from "./lib/theme";
-import { ThemeToggle } from "./lib/theme-toggle";
 import "./app.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -46,17 +44,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <ChatProvider>
-        <header className="app-header">
-          <Link to="/" className="app-header__logo">
-            Chats<span className="app-header__accent">Wrapped</span>
-          </Link>
-          <ThemeToggle />
-        </header>
-        <Outlet />
-      </ChatProvider>
-    </ThemeProvider>
+    <ChatProvider>
+      <header className="app-header">
+        <Link to="/" className="app-header__logo">
+          Chats<span className="app-header__accent">Wrapped</span>
+        </Link>
+      </header>
+      <Outlet />
+    </ChatProvider>
   );
 }
 

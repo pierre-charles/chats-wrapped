@@ -78,19 +78,6 @@ h6 {
   color: var(--color-primary);
 }
 
-.theme-toggle {
-  background: none;
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--color-text);
-}
-
 html,
 body {
   margin: 0;
