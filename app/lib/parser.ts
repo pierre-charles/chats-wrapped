@@ -6,17 +6,17 @@ import {
   AggregatedStatsSchema,
   ChatDataSchema,
   type DayAverage,
-  DayOfWeekSchema,
-  type MediaSent,
+  type DayOfWeekSchema,
   type DayStats,
   DayStatsSchema,
   type HourCount,
+  type MediaSent,
   MediaSentSchema,
   type Message,
   type MonthlyMessages,
   type ParseResult,
   RawMessageSchema,
-  type UserCount,
+  type UserCount
 } from "./schemas";
 
 /** Matches visible emoji characters (excludes text-style emoji like digits) */
@@ -29,7 +29,7 @@ const MEDIA_CHECKS = [
   ["gif omitted", "gifs"],
   ["video omitted", "videos"],
   ["audio omitted", "audios"],
-  ["sticker omitted", "stickers"],
+  ["sticker omitted", "stickers"]
 ] as const satisfies z.infer<typeof MediaCheckSchema>[];
 
 const DAY_BY_INDEX = [
@@ -39,7 +39,7 @@ const DAY_BY_INDEX = [
   "Wednesday",
   "Thursday",
   "Friday",
-  "Saturday",
+  "Saturday"
 ] as const satisfies z.infer<typeof DayOfWeekSchema>[];
 
 const EXCLUDED_WORDS = new Set([
@@ -50,7 +50,7 @@ const EXCLUDED_WORDS = new Set([
   "poll",
   "sticker",
   "gif",
-  "image",
+  "image"
 ]);
 
 function parseMessage(line: string): Message | null {
@@ -73,7 +73,7 @@ function countEmojis(message: string): UserCount {
 function buildDayStats(
   date: Date,
   messages: Message[],
-  allUsers: string[],
+  allUsers: string[]
 ): DayStats {
   const messageCount: UserCount = {};
   const emojisUsed: UserCount = {};
@@ -84,7 +84,7 @@ function buildDayStats(
     videos: {},
     audios: {},
     polls: {},
-    stickers: {},
+    stickers: {}
   };
 
   const deletedMessages: UserCount = {};
@@ -145,12 +145,12 @@ function buildDayStats(
     messageCount,
     emojisUsed: Object.entries(emojisUsed).map(([emoji, count]) => ({
       emoji,
-      count,
+      count
     })),
     deletedMessages,
     mediaSent: media,
     wordFrequency,
-    hourlyMessages,
+    hourlyMessages
   });
 }
 
@@ -164,9 +164,11 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
     videos: {},
     audios: {},
     polls: {},
-    stickers: {},
+    stickers: {}
   };
-  const averageMessagePerIndividualDay: Partial<Record<z.infer<typeof DayOfWeekSchema>, DayAverage>> = {};
+  const averageMessagePerIndividualDay: Partial<
+    Record<z.infer<typeof DayOfWeekSchema>, DayAverage>
+  > = {};
   const activeHours: ActiveHours = {
     Monday: {},
     Tuesday: {},
@@ -174,17 +176,17 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
     Thursday: {},
     Friday: {},
     Saturday: {},
-    Sunday: {},
+    Sunday: {}
   };
   const wordsSentCount = new Map<string, number>();
   let totalMessages = 0;
   let mostActiveDay: ActiveDay = {
     totalMessages: 0,
-    date: new Date(0),
+    date: new Date(0)
   };
   let leastActiveDay: ActiveDay = {
     totalMessages: Infinity,
-    date: new Date(0),
+    date: new Date(0)
   };
 
   for (const day of dayObjects) {
@@ -225,13 +227,13 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
     averageMessagePerIndividualDay[dayName] ??= {
       dayCount: 0,
       totalMessages: 0,
-      average: 0,
+      average: 0
     };
     averageMessagePerIndividualDay[dayName].dayCount++;
     averageMessagePerIndividualDay[dayName].totalMessages += day.totalMessages;
     averageMessagePerIndividualDay[dayName].average = Math.round(
       averageMessagePerIndividualDay[dayName].totalMessages /
-        averageMessagePerIndividualDay[dayName].dayCount,
+        averageMessagePerIndividualDay[dayName].dayCount
     );
 
     activeHours[dayName] ??= {};
@@ -243,7 +245,7 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
   const totalDays = dayObjects.length;
   const averageMessagePerDay = Math.round(totalMessages / totalDays);
   const averageMessagePerUserPerDay = Object.entries(totalMessagesByUser).map(
-    ([user, count]) => ({ user, average: Math.round(count / totalDays) }),
+    ([user, count]) => ({ user, average: Math.round(count / totalDays) })
   );
 
   if (leastActiveDay.totalMessages === Infinity) {
@@ -265,7 +267,7 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
     wordsSentCount: Object.fromEntries(sortedWords),
     mostActiveDay,
     leastActiveDay,
-    activeHours,
+    activeHours
   });
 }
 
@@ -302,7 +304,7 @@ export function parseChatFile(content: string): ParseResult {
 
   const allUsers = Array.from(users);
   const dayStats = Array.from(messagesByDate.entries()).map(
-    ([timestamp, msgs]) => buildDayStats(new Date(timestamp), msgs, allUsers),
+    ([timestamp, msgs]) => buildDayStats(new Date(timestamp), msgs, allUsers)
   );
 
   const stats = aggregateStats(dayStats);
@@ -325,7 +327,7 @@ export function parseChatFile(content: string): ParseResult {
     messagesPerUserPerMonth,
     dayStats,
     users: allUsers,
-    lastUpdated: dayStats.at(-1)?.date ?? new Date(0),
+    lastUpdated: dayStats.at(-1)?.date ?? new Date(0)
   });
 
   if (!result.success) {
