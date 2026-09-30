@@ -362,6 +362,7 @@ export function parseChatFile(content: string): ParseResult {
   const messagesByDate = new Map<number, Message[]>();
   let lastMessage: Message | null = null;
   let groupName: string | null = null;
+  let groupNameSentRealMessage = false;
 
   for (const line of lines) {
     const parsed = parseMessage(line);
@@ -391,10 +392,6 @@ export function parseChatFile(content: string): ParseResult {
       continue;
     }
 
-    if (groupName && parsed.user === groupName) {
-      continue;
-    }
-
     users.add(parsed.user);
 
     const key = parsed.date.getTime();
@@ -402,6 +399,20 @@ export function parseChatFile(content: string): ParseResult {
     existing.push(parsed);
     messagesByDate.set(key, existing);
     lastMessage = parsed;
+  }
+
+  // In a group chat, the "group name" sender only sends system messages (already filtered).
+  // In a 1-on-1, there are only 2 senders — don't filter either.
+  if (groupName && users.size > 2) {
+    users.delete(groupName);
+    for (const [key, msgs] of messagesByDate) {
+      const filtered = msgs.filter((m) => m.user !== groupName);
+      if (filtered.length === 0) {
+        messagesByDate.delete(key);
+      } else {
+        messagesByDate.set(key, filtered);
+      }
+    }
   }
 
   const allUsers = Array.from(users);
