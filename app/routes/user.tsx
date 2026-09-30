@@ -60,7 +60,6 @@ export default function User() {
   }
 
   const userEmojis = sortDesc(stats.emojisUsedByUser[user] ?? {}).slice(0, 10);
-  const userWords = sortDesc(stats.wordsUsedByUser[user] ?? {}).slice(0, 10);
   const userActiveHours = stats.activeHoursByUser[user] ?? {
     Monday: {},
     Tuesday: {},
@@ -157,21 +156,6 @@ export default function User() {
           mutedColor={colors.muted}
         />
       </section>
-
-      {userWords.length > 0 && (
-        <section className="stats__section">
-          <h2>Top 10 words</h2>
-          <HighchartsReact
-            highcharts={Highcharts}
-            options={barChart(
-              userWords.map(([w]) => w),
-              userWords.map(([, c]) => c),
-              colors.words,
-              colors.text,
-            )}
-          />
-        </section>
-      )}
     </main>
   );
 }

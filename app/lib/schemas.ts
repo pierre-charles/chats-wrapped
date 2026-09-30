@@ -64,10 +64,8 @@ export const DayStatsSchema = z.object({
   emojisUsed: z.array(EmojiCountSchema),
   deletedMessages: UserCountSchema,
   mediaSent: MediaSentSchema,
-  wordFrequency: UserCountSchema,
   hourlyMessages: HourCountSchema,
   emojisUsedByUser: z.record(z.string(), UserCountSchema),
-  wordFrequencyByUser: z.record(z.string(), UserCountSchema),
   hourlyMessagesByUser: z.record(z.string(), HourCountSchema),
 });
 
@@ -119,12 +117,10 @@ export const AggregatedStatsSchema = z.object({
   totalEmojisUsed: UserCountSchema,
   totalMediaSent: MediaSentSchema,
   deletedMessagesCount: UserCountSchema,
-  wordsSentCount: UserCountSchema,
   mostActiveDay: ActiveDaySchema,
   leastActiveDay: ActiveDaySchema,
   activeHours: ActiveHoursSchema,
   emojisUsedByUser: z.record(z.string(), UserCountSchema),
-  wordsUsedByUser: z.record(z.string(), UserCountSchema),
   activeHoursByUser: z.record(z.string(), ActiveHoursSchema),
 });
 

@@ -18,7 +18,6 @@ import {
   RawMessageSchema,
   type UserCount,
 } from "./schemas";
-import { STOPWORDS } from "./stopwords";
 
 /** Matches all emoji including skin tones, flags, and variation selectors like ❤️ */
 const EMOJI_REGEX = /\p{RGI_Emoji}/gv;
@@ -93,7 +92,6 @@ function buildDayStats(
 ): DayStats {
   const messageCount: UserCount = {};
   const emojisUsed: UserCount = {};
-  const wordFrequency: UserCount = {};
   const media: MediaSent = {
     images: {},
     gifs: {},
@@ -106,7 +104,6 @@ function buildDayStats(
   const deletedMessages: UserCount = {};
   const hourlyMessages: HourCount = {};
   const emojisUsedByUser: Record<string, UserCount> = {};
-  const wordFrequencyByUser: Record<string, UserCount> = {};
   const hourlyMessagesByUser: Record<string, HourCount> = {};
 
   for (const user of allUsers) {
@@ -143,23 +140,6 @@ function buildDayStats(
     }
 
     const lower = m.content.toLowerCase();
-    const words = lower.replace(/[^\w\s]/g, "").split(/\s+/);
-
-    for (const word of words) {
-      if (STOPWORDS.has(word)) {
-        continue;
-      }
-      if (/^\d+$/.test(word)) {
-        continue;
-      }
-      if (word.length <= 1) {
-        continue;
-      }
-      wordFrequency[word] = (wordFrequency[word] ?? 0) + 1;
-      wordFrequencyByUser[m.user] ??= {};
-      wordFrequencyByUser[m.user][word] =
-        (wordFrequencyByUser[m.user][word] ?? 0) + 1;
-    }
 
     for (const [keyword, bucket] of MEDIA_CHECKS) {
       if (lower.includes(keyword)) {
@@ -182,10 +162,8 @@ function buildDayStats(
     })),
     deletedMessages,
     mediaSent: media,
-    wordFrequency,
     hourlyMessages,
     emojisUsedByUser,
-    wordFrequencyByUser,
     hourlyMessagesByUser,
   });
 }
@@ -214,9 +192,7 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
     Saturday: {},
     Sunday: {},
   };
-  const wordsSentCount = new Map<string, number>();
   const emojisUsedByUser: Record<string, Record<string, number>> = {};
-  const wordsUsedByUser: Record<string, Map<string, number>> = {};
   const activeHoursByUser: Record<string, ActiveHours> = {};
   let totalMessages = 0;
   let mostActiveDay: ActiveDay = {
@@ -257,10 +233,6 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
       deletedMessagesCount[user] = (deletedMessagesCount[user] ?? 0) + count;
     }
 
-    for (const [word, count] of Object.entries(day.wordFrequency)) {
-      wordsSentCount.set(word, (wordsSentCount.get(word) ?? 0) + count);
-    }
-
     const dayIndex = day.date.getDay();
     const dayName = DAY_BY_INDEX[dayIndex];
     averageMessagePerIndividualDay[dayName] ??= {
@@ -285,16 +257,6 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
       for (const [emoji, count] of Object.entries(emojiMap)) {
         emojisUsedByUser[user][emoji] =
           (emojisUsedByUser[user][emoji] ?? 0) + count;
-      }
-    }
-
-    for (const [user, wordMap] of Object.entries(day.wordFrequencyByUser)) {
-      wordsUsedByUser[user] ??= new Map();
-      for (const [word, count] of Object.entries(wordMap)) {
-        wordsUsedByUser[user].set(
-          word,
-          (wordsUsedByUser[user].get(word) ?? 0) + count,
-        );
       }
     }
 
@@ -326,15 +288,6 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
     leastActiveDay = { totalMessages: 0, date: new Date(0) };
   }
 
-  const sortedWords = new Map([...wordsSentCount].sort((a, b) => b[1] - a[1]));
-
-  const cappedWordsByUser: Record<string, Record<string, number>> = {};
-  for (const [user, wordMap] of Object.entries(wordsUsedByUser)) {
-    cappedWordsByUser[user] = Object.fromEntries(
-      [...wordMap].sort((a, b) => b[1] - a[1]).slice(0, 20),
-    );
-  }
-
   return AggregatedStatsSchema.parse({
     days: totalDays,
     totalMessages,
@@ -345,12 +298,10 @@ export function aggregateStats(dayObjects: DayStats[]): AggregatedStats {
     totalEmojisUsed: Object.fromEntries(totalEmojisUsed),
     totalMediaSent: mediaCounts,
     deletedMessagesCount,
-    wordsSentCount: Object.fromEntries(sortedWords),
     mostActiveDay,
     leastActiveDay,
     activeHours,
     emojisUsedByUser,
-    wordsUsedByUser: cappedWordsByUser,
     activeHoursByUser,
   });
 }
@@ -362,7 +313,6 @@ export function parseChatFile(content: string): ParseResult {
   const messagesByDate = new Map<number, Message[]>();
   let lastMessage: Message | null = null;
   let groupName: string | null = null;
-  let groupNameSentRealMessage = false;
 
   for (const line of lines) {
     const parsed = parseMessage(line);

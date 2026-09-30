@@ -38,7 +38,6 @@
   --chart-avg-user: light-dark(#0f766e, #73c6b6);
   --chart-avg-day: light-dark(#c2610c, #f7a35c);
   --chart-trend: light-dark(#e74c3c, #e74c3c);
-  --chart-words: light-dark(#6366f1, #a5b4fc);
   --chart-heatmap: light-dark(#128c55, #f7a35c);
 }
 
