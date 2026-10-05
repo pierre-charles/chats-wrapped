@@ -29,7 +29,7 @@ Your data never leaves your browser. No server, no database, no cookies, no anal
 - [Highcharts](https://www.highcharts.com) — bar and line charts
 - [Biome](https://biomejs.dev) — linter and formatter
 - Vanilla CSS with `light-dark()` for automatic dark mode
-- Local variable fonts ([Geist](https://vercel.com/font) for body, [Bricolage Grotesque](https://fonts.google.com/specimen/Bricolage+Grotesque) for headings)
+- Local variable fonts ([Geist](https://vercel.com/font) for body, [Bricolage Grotesque](https://fonts.google.com/specimen/Bricolage+Grotesque) for headings), both under the [SIL Open Font License](public/fonts)
 
 ## Getting started
 
