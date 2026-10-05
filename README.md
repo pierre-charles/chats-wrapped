@@ -59,3 +59,5 @@ Open [http://localhost:5173](http://localhost:5173), upload a WhatsApp chat expo
 ## License
 
 [MIT](LICENSE)
+
+[Highcharts](https://www.highcharts.com) is not covered by this licence. It is free for personal and non-commercial use; commercial use requires a [Highcharts licence](https://shop.highcharts.com).
