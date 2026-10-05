@@ -108,7 +108,12 @@ export function lineChart(
   const b = base(textColor);
   return {
     ...b,
-    legend: { enabled: true, itemStyle: { color: textColor } },
+    legend: {
+      enabled: true,
+      itemStyle: { color: textColor, cursor: "default" },
+      itemHoverStyle: { color: textColor },
+      events: { itemClick: () => false },
+    },
     chart: { ...b.chart, type: "line" },
     xAxis: {
       type: "datetime",
