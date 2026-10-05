@@ -1,6 +1,6 @@
 import * as Highcharts from "highcharts";
 import { HighchartsReact } from "highcharts-react-official";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Heatmap } from "../components/heatmap";
 import { barChart, lineChart, useChartColors } from "../lib/charts";
@@ -46,27 +46,38 @@ export default function Stats() {
     [stats],
   );
 
-  const monthlyTrendSeries = useMemo(() => {
-    if (!data) {
-      return [];
-    }
+  const trendUsers = useMemo(
+    () => messageSenders.map(([u]) => u),
+    [messageSenders],
+  );
 
-    const allUsers = new Set<string>();
-    for (const m of data.messagesPerUserPerMonth) {
-      for (const user of Object.keys(m.users)) {
-        allUsers.add(user);
-      }
-    }
+  const [visibleUsers, setVisibleUsers] = useState<Set<string>>(
+    () => new Set(trendUsers.slice(0, 5)),
+  );
 
-    return Array.from(allUsers).map((user) => ({
-      name: user,
-      type: "line" as const,
-      data: data.messagesPerUserPerMonth.map(({ month, users }) => [
-        new Date(`${month}-01`).getTime(),
-        users[user] ?? 0,
-      ]),
-    }));
-  }, [data]);
+  const monthlyTrendSeries = useMemo(
+    () =>
+      trendUsers.flatMap((user) =>
+        visibleUsers.has(user)
+          ? [
+              {
+                name: user,
+                type: "line" as const,
+                data: (data?.messagesPerUserPerMonth ?? []).map(
+                  ({ month, users }) => [
+                    new Date(`${month}-01`).getTime(),
+                    users[user] ?? 0,
+                  ],
+                ),
+              },
+            ]
+          : [],
+      ),
+    [data, trendUsers, visibleUsers],
+  );
+
+  const toggleUser = (user: string) =>
+    setVisibleUsers((prev) => prev.symmetricDifference(new Set([user])));
 
   if (!data || !stats) {
     return null;
@@ -223,6 +234,31 @@ export default function Stats() {
 
       <section className="stats__section" id="messages-trends">
         <h2>Messages sent trends</h2>
+        <div className="trend-filters">
+          <div className="trend-filters__actions">
+            <button
+              type="button"
+              onClick={() => setVisibleUsers(new Set(trendUsers))}
+            >
+              Select all
+            </button>
+            <button type="button" onClick={() => setVisibleUsers(new Set())}>
+              Clear all
+            </button>
+          </div>
+          <div className="trend-filters__list">
+            {trendUsers.map((user) => (
+              <label key={user} className="trend-filters__item">
+                <input
+                  type="checkbox"
+                  checked={visibleUsers.has(user)}
+                  onChange={() => toggleUser(user)}
+                />
+                {user}
+              </label>
+            ))}
+          </div>
+        </div>
         <HighchartsReact
           highcharts={Highcharts}
           options={lineChart(monthlyTrendSeries, colors.text)}

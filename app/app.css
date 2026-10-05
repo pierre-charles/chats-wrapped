@@ -309,6 +309,48 @@ body {
   margin: 0 0 16px;
 }
 
+/* Trend filters */
+
+.trend-filters {
+  margin-bottom: 16px;
+}
+
+.trend-filters__actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.trend-filters__actions button {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.trend-filters__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+
+.trend-filters__item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.trend-filters__item input[type="checkbox"] {
+  accent-color: var(--color-primary);
+}
+
 /* Podium */
 
 .podium {
