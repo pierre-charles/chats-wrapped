@@ -23,7 +23,7 @@ Your data never leaves your browser. No server, no database, no cookies, no anal
 ## Tech stack
 
 - [React](https://react.dev) + [TypeScript](https://www.typescriptlang.org)
-- [React Router v7](https://reactrouter.com) — routing and SSR framework
+- [React Router v8](https://reactrouter.com) — routing and SSR framework
 - [Vite](https://vite.dev) — build tool and dev server
 - [Zod](https://zod.dev) — schema validation and type inference (single source of truth for all types)
 - [Highcharts](https://www.highcharts.com) — bar and line charts
